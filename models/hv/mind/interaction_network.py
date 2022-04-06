@@ -13,7 +13,8 @@ from torch.utils.data import Dataset, DataLoader
 from ..actions import nr_class_actions
 from settings import *
 
-USE_CUDA = True
+#USE_CUDA = True
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 n_objects  =  MAX_HVS_IN_GROUP # number of hvs (nodes)
 object_dim = NR_FEATURES # features in visible
@@ -21,43 +22,79 @@ n_relations  = n_objects * (n_objects - 1) # number of edges in fully connected 
 effect_dim = 100 #effect's vector size
 output_dim = nr_class_actions
 
+receiver_relations = np.zeros((n_objects, n_relations))
+sender_relations   = np.zeros((n_objects, n_relations))
+
+# R_S R_R are fixed and could be computed only once...
+cnt = 0
+for i in range(n_objects):
+    for j in range(n_objects):
+        if(i != j):
+            receiver_relations[i, cnt] = 1.0
+            sender_relations[j, cnt]   = 1.0
+            cnt += 1
+
+sender_relations   = torch.tensor(sender_relations, device=device, dtype=torch.float)
+receiver_relations = torch.tensor(receiver_relations, device=device, dtype=torch.float)
+
+# batch_size = 1
+# receiver_relations = np.zeros((batch_size, n_objects, n_relations), dtype=float)
+# sender_relations   = np.zeros((batch_size, n_objects, n_relations), dtype=float)
+
+# cnt = 0
+# for i in range(n_objects):
+#     for j in range(n_objects):
+#         if(i != j):
+#             receiver_relations[:, i, cnt] = 1.0
+#             sender_relations[:, j, cnt]   = 1.0
+#             cnt += 1
+    
+# sender_relations   = Variable(torch.FloatTensor(sender_relations))
+# receiver_relations = Variable(torch.FloatTensor(receiver_relations))
+                    
+# if USE_CUDA:    
+#     sender_relations   = sender_relations.cuda()
+#     receiver_relations = receiver_relations.cuda()
+
+
 # give data as input, it will be extract from HV memory
 #data = memory 
 #data.shape # events in memory, n_objects, nr_features -> features
 
-def get_batch(data, batch_size):    
-    #rand_idx  = [random.randint(0, len(data)) for _ in range(batch_size)]    
-    rand_idx = np.random.randint(0, len(data), size=batch_size)    
+# def get_batch(data, batch_size):   
+
+#     #rand_idx  = [random.randint(0, len(data)) for _ in range(batch_size)]    
+#     rand_idx = np.random.randint(0, len(data), size=batch_size)        
+
+#     batch_data = data[rand_idx]    
     
-    batch_data = data[rand_idx]    
+#     objects = batch_data
     
-    objects = batch_data
+#     #receiver_relations, sender_relations - onehot encoding matrices
+#     #each column indicates the receiver and sender object’s index
     
-    #receiver_relations, sender_relations - onehot encoding matrices
-    #each column indicates the receiver and sender object’s index
+#     receiver_relations = np.zeros((batch_size, n_objects, n_relations), dtype=float)
+#     sender_relations   = np.zeros((batch_size, n_objects, n_relations), dtype=float)
     
-    receiver_relations = np.zeros((batch_size, n_objects, n_relations), dtype=float)
-    sender_relations   = np.zeros((batch_size, n_objects, n_relations), dtype=float)
-    
-    # R_S R_R are fixed and can be computed only once...
-    cnt = 0
-    for i in range(n_objects):
-        for j in range(n_objects):
-            if(i != j):
-                receiver_relations[:, i, cnt] = 1.0
-                sender_relations[:, j, cnt]   = 1.0
-                cnt += 1
+#     # R_S R_R are fixed and could be computed only once...
+#     cnt = 0
+#     for i in range(n_objects):
+#         for j in range(n_objects):
+#             if(i != j):
+#                 receiver_relations[:, i, cnt] = 1.0
+#                 sender_relations[:, j, cnt]   = 1.0
+#                 cnt += 1
         
-    objects            = Variable(torch.FloatTensor(objects))
-    sender_relations   = Variable(torch.FloatTensor(sender_relations))
-    receiver_relations = Variable(torch.FloatTensor(receiver_relations))
+#     objects            = Variable(torch.FloatTensor(objects))
+#     sender_relations   = Variable(torch.FloatTensor(sender_relations))
+#     receiver_relations = Variable(torch.FloatTensor(receiver_relations))
                        
-    if USE_CUDA:
-        objects            = objects.cuda()
-        sender_relations   = sender_relations.cuda()
-        receiver_relations = receiver_relations.cuda()
+#     if USE_CUDA:
+#         objects            = objects.cuda()
+#         sender_relations   = sender_relations.cuda()
+#         receiver_relations = receiver_relations.cuda()
     
-    return objects, sender_relations, receiver_relations
+#     return objects, sender_relations, receiver_relations
 
 class RelationalModel(nn.Module):
     def __init__(self, input_size, output_size, hidden_size):
@@ -84,7 +121,7 @@ class RelationalModel(nn.Module):
             [batch_size, n_relations, output_size]
         '''
         batch_size, n_relations, input_size = x.size()
-        x = x.view(-1, input_size)
+        x = x.view(-1, input_size)        
         x = self.layers(x)
         x = x.view(batch_size, n_relations, self.output_size)
         return x

@@ -15,8 +15,6 @@ from settings import *
 
 # Graph parameters
 #USE_CUDA = True
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
@@ -44,7 +42,8 @@ class ReplayMemory(object):
 
 # Training
 
-BATCH_SIZE = 128
+#BATCH_SIZE = 128
+BATCH_SIZE = 5
 GAMMA = 0.999
 EPS_START = 0.9
 EPS_END = 0.05

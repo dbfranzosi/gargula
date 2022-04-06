@@ -28,6 +28,9 @@ class BaseMind:
     def update_memory(self):
         pass
 
+    def optimize_mind(self):
+        pass
+
 class RandomMind(BaseMind):
 
     def decide_action(self):        
@@ -61,22 +64,21 @@ class MemoryGraphMind(PonderMind):
     def __init__(self, owner, memory_capacity):
         super().__init__(owner)
         self.memory = ReplayMemory(memory_capacity)
-        self.state = perception(self.group)
+        self.state = torch.tensor(perception(self.group), device=device) 
         self.next_state = None
         self.reward = None
-        self.action = owner.action
         # action representation in mind is the index of predict tensor
-        self.mind_action = -1
+        self.action = torch.tensor([-1], device=device, dtype=torch.float) 
 
     def decide_action(self):                
-        self.action = super().decide_action()
-        self.state = perception(self.group) 
-        self.reward = self.action.reward   
-        return self.action     
+        action = super().decide_action()
+        self.state = torch.tensor(perception(self.group), device=device, dtype=torch.float) 
+        self.reward = torch.tensor([action.reward], device=device, dtype=torch.float)   
+        return action     
 
     def update_memory(self):        
-        self.next_state = perception(self.group)         
-        self.memory.push(self.state, -1, self.next_state, self.reward)
+        self.next_state = torch.tensor(perception(self.group), device=device, dtype=torch.float) 
+        self.memory.push(self.state, self.action, self.next_state, self.reward)
 
 import torch
 import torch.nn as nn
@@ -94,81 +96,107 @@ class GraphMind(MemoryGraphMind):
         self.target_net.eval()
         self.optimizer = optim.RMSprop(self.policy_net.parameters())        
 
-    def decide_action(self):
+    def decide_action(self):        
+        ### MESS HERE
+        self.state = torch.tensor(perception(self.group), device=device, dtype=torch.float)         
         sample = random.random()
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
             math.exp(-1. * self.owner.age / EPS_DECAY)        
         if sample > eps_threshold:
-            print('exploitation')
+            #print('exploitation')
             with torch.no_grad():
                 # t.max(1) will return largest column value of each row.
                 # second column on max result is index of where max element was
                 # found, so we pick action with the larger expected reward.
-                #self.policy_net(self.state).max(1)[1].view(1, 1)
-                data = np.array([self.state])                
-                objects, sender_relations, receiver_relations = get_batch(data, 1)
-                predicted = self.policy_net(objects, sender_relations, receiver_relations)
-                print(predicted)
-                self.mind_action = predicted.argmax()
-                target_nr, action_nr = divmod(int(predicted.argmax()), nr_class_actions)                
+                #self.policy_net(self.state).max(1)[1].view(1, 1)                
+                #data = np.array([self.state])
+                #objects, sender_relations, receiver_relations = get_batch(data, 1) 
+                RS = sender_relations.expand(1, -1 , -1)           
+                RR = receiver_relations.expand(1, -1 , -1) 
+                X = self.state.expand(1, -1, -1)
+                predicted = self.policy_net(X, RS, RR)
+                #print(predicted)
+                self.action = predicted.argmax().expand(1)
+                print('action=', self.action)
+                target_nr, action_nr = divmod(int(self.action), nr_class_actions) 
                 action_code = [lst_class_actions[action_nr], target_nr]
-                print(action_code)
-                self.action = get_action(action_code, self.owner)                  
+                #print(action_code)
+                action = get_action(action_code, self.owner)                  
         else:
-            print('exploration')
-            target_nr, action_nr = random.randrange(0, self.group.nr_hvs()), random.randrange(0, nr_class_actions)
+            #print('exploration')
+            nr_hvs = self.group.nr_hvs()
+            target_nr, action_nr = random.randrange(0, nr_hvs), random.randrange(0, nr_class_actions)
+            self.action = torch.tensor([target_nr*nr_hvs + action_nr], device=device, dtype=torch.int64)
             action_code = [lst_class_actions[action_nr], target_nr]
-            print(action_code)
-            self.action = get_action(action_code, self.owner)  
+            #print(action_code)
+            action = get_action(action_code, self.owner)  
             #print(torch.tensor([[random.randrange(n_actions)]], device=device, dtype=torch.long))
-
-        def update_memory(self): 
-            self.next_state = perception(self.group)         
-            self.memory.push(self.state, self.mind_action, self.next_state, self.reward)
-
+        self.reward = torch.tensor([action.reward], device=device, dtype=torch.float) 
+        return action
         
-        return self.action
+        
 
 class GraphDQLMind(GraphMind):
     def optimize_mind(self):
         if len(self.memory) < BATCH_SIZE:
             return
-        transitions = memory.sample(BATCH_SIZE)
+        transitions = self.memory.sample(BATCH_SIZE)
         # Transpose the batch (see https://stackoverflow.com/a/19343/3343043 for
         # detailed explanation). This converts batch-array of Transitions
         # to Transition of batch-arrays.
         batch = Transition(*zip(*transitions))
 
-        next_state_batch = torch.cat(batch.next_state)
-        state_batch = torch.cat(batch.state)
-        action_batch = torch.cat(batch.action)
-        reward_batch = torch.cat(batch.reward)
+        print('training')
+        print(batch.action)
+        print(batch.state)
+        
+        state_batch = torch.stack(batch.state)
+        next_state_batch = torch.stack(batch.next_state)
+        action_batch = torch.stack(batch.action)
+        reward_batch = torch.stack(batch.reward)
+
+        RS = sender_relations.expand(BATCH_SIZE, -1 , -1)           
+        RR = receiver_relations.expand(BATCH_SIZE, -1 , -1)                 
 
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
-        state_action_values = self.policy_net(state_batch).gather(1, action_batch)
-
+        print(state_batch.size())
+        print(RS.size())
+        print(RR.size())
+        predicted = self.policy_net(state_batch, RS, RR)
+        state_action_values = predicted.gather(1, action_batch)
+        
+        print('state_action_values=', state_action_values)
+        
         # Compute V(s_{t+1}) for all next states.
         # Expected values of actions for non_final_next_states are computed based
         # on the "older" target_net; selecting their best reward with max(1)[0].
         # This is merged based on the mask, such that we'll have either the expected
         # state value or 0 in case the state was final.       
+        # next_state_values = self.target_net(next_state_batch).max(1)[0].detach()
         # ===> PICK RIGHT DIMENSION HERE 
-        next_state_values = self.target_net(next_state_batch).max(1)[0].detach()
+        predicted_target = self.target_net(next_state_batch, RS, RR)        
+        next_state_values = predicted_target.max(1)[0].detach()
+        print('next_state_values=', next_state_values)
+        
         # Compute the expected Q values
-        expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+        expected_state_action_values = (next_state_values * GAMMA) + reward_batch        
 
-        # Compute Huber loss
-        criterion = nn.SmoothL1Loss()
-        loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
+        # # Compute Huber loss
+        # criterion = nn.SmoothL1Loss()
+        # loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
 
-        # Optimize the model
-        optimizer.zero_grad()
-        loss.backward()
-        for param in policy_net.parameters():
-            param.grad.data.clamp_(-1, 1)
-        optimizer.step()
+        # # Optimize the model
+        # optimizer.zero_grad()
+        # loss.backward()
+        # for param in self.policy_net.parameters():
+        #     param.grad.data.clamp_(-1, 1)
+        # optimizer.step()
+
+        # # Update the target network, copying all weights and biases in DQN
+        # if self.owner.age % TARGET_UPDATE == 0:
+        #     self.target_net.load_state_dict(self.policy_net.state_dict())
 
 
 

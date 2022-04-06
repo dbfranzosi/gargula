@@ -30,12 +30,14 @@ class Hv:
 
         #self.mind = PonderMind(self, group)         
         #self.mind = MemoryGraphMind(self, 1000)
-        self.mind = GraphMind(self, 1000)
+        #self.mind = GraphMind(self, 1000)
+        self.mind = GraphDQLMind(self, 1000)
 
     def act(self):
         self.action = self.mind.decide_action()        
         self.action.effects()        
-        self.mind.update_memory()             
+        self.mind.update_memory()  
+        self.mind.optimize_mind()           
 
     def aging(self):
         self.age += 1
