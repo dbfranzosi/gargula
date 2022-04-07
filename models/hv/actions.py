@@ -131,11 +131,3 @@ class Attack(TargetedAction):
         if self.conditions:            
             self.target.energy -= self.owner.genes.phenotype.power_attack/UNIT_ENERGY
 
-
-
-
-
-    
-
-    
-    

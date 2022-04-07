@@ -55,18 +55,6 @@ class Group:
         #print(self.hvs.values().name)
         print(f'Group {self.name} in area {self.home.name} has {self.nr_hvs()} homo-virtualis: {str_hvs}')
 
-    # Graphical tools
-    def plot_genes_init(self, ax):
-        #x = np.arange(GEN_SIZE)
-        y = sum([hv.genes.sequence[0]+hv.genes.sequence[1] for hv in self.hvs.values()])/(2*self.nr_hvs())
-        steps = ax.stairs(y, fill=True)  
-        ax.set_ylim(0.,1.2)
-        return steps      
-
-    def plot_genes_update(self, ax, steps):        
-        y = sum([hv.genes.sequence[0]+hv.genes.sequence[1] for hv in self.hvs.values()])/(2*self.nr_hvs())
-        steps.set_data(y)
-
 gargalo = Group(name='Gargalo', home=eden)
 gargalo.generate_gargalo()
 conception = Group(name='Conception')
