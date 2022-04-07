@@ -127,13 +127,15 @@ class RelationalModel(nn.Module):
         return x
 
 class ObjectModel(nn.Module):
-    def __init__(self, input_size, hidden_size, output_dim):
+    def __init__(self, input_size, hidden_size, output_size):
         super(ObjectModel, self).__init__()
+
+        self.output_size = output_size
         
         self.layers = nn.Sequential(
             nn.Linear(input_size, hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, output_dim), #rest, eat (non-targeted). sex, attack (targeted)
+            nn.Linear(hidden_size, output_size), #rest, eat (non-targeted). sex, attack (targeted)
         )
         
     def forward(self, x):
@@ -141,11 +143,18 @@ class ObjectModel(nn.Module):
         Args:
             x: [batch_size, n_objects, input_size]
         Returns:
-            [batch_size * n_objects, 2] speedX and speedY
+            [batch_size, n_objects, output_size] out ~ rest, eat (non-targeted). sex, attack (targeted)
         '''
-        input_size = x.size(2)
-        x = x.view(-1, input_size)
-        return self.layers(x)
+
+        batch_size, n_objects, input_size = x.size()
+        x = x.view(-1, input_size)        
+        x = self.layers(x)
+        x = x.view(batch_size, n_objects, self.output_size)
+        return x
+
+        # input_size = x.size(2)
+        # x = x.view(-1, input_size)
+        # return self.layers(x)
 
 class InteractionNetwork(nn.Module):
     def __init__(self, n_objects, object_dim, n_relations, effect_dim, output_dim):
@@ -160,6 +169,12 @@ class InteractionNetwork(nn.Module):
         effects = self.relational_model(torch.cat([senders, receivers], 2))
         effect_receivers = receiver_relations.bmm(effects)
         predicted = self.object_model(torch.cat([objects, effect_receivers], 2))
+        print('objects=', objects.size())
+        print('senders=', senders.size())
+        print('receivers=',receivers.size())
+        print('effects=',effects.size())
+        print('effect_receivers=',effect_receivers.size())
+        print('predicted=',predicted.size())
         return predicted
 
 '''

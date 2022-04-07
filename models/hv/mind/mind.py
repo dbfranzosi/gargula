@@ -147,8 +147,8 @@ class GraphDQLMind(GraphMind):
         batch = Transition(*zip(*transitions))
 
         print('training')
-        print(batch.action)
-        print(batch.state)
+        #print(batch.action)
+        #print(batch.state)
         
         state_batch = torch.stack(batch.state)
         next_state_batch = torch.stack(batch.next_state)
@@ -161,11 +161,12 @@ class GraphDQLMind(GraphMind):
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
-        print(state_batch.size())
-        print(RS.size())
-        print(RR.size())
+        # print(state_batch.size())
+        # print(RS.size())
+        # print(RR.size())
         predicted = self.policy_net(state_batch, RS, RR)
-        state_action_values = predicted.gather(1, action_batch)
+        print(action_batch.size())
+        state_action_values = predicted.view(BATCH_SIZE, -1).gather(1, action_batch)
         
         print('state_action_values=', state_action_values)
         
@@ -177,26 +178,30 @@ class GraphDQLMind(GraphMind):
         # next_state_values = self.target_net(next_state_batch).max(1)[0].detach()
         # ===> PICK RIGHT DIMENSION HERE 
         predicted_target = self.target_net(next_state_batch, RS, RR)        
-        next_state_values = predicted_target.max(1)[0].detach()
+        #next_state_values = predicted_target.max(1)[0].detach()
+        next_state_values = predicted_target.view(BATCH_SIZE, -1).max(dim=1)[0].unsqueeze(1)
         print('next_state_values=', next_state_values)
+        print('reward=', reward_batch)
         
         # Compute the expected Q values
-        expected_state_action_values = (next_state_values * GAMMA) + reward_batch        
+        expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
+        print('expected Q=', expected_state_action_values)     
 
         # # Compute Huber loss
-        # criterion = nn.SmoothL1Loss()
-        # loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
+        criterion = nn.SmoothL1Loss()
+        #loss = criterion(state_action_values, expected_state_action_values.unsqueeze(1))
+        loss = criterion(state_action_values, expected_state_action_values)
 
-        # # Optimize the model
-        # optimizer.zero_grad()
-        # loss.backward()
-        # for param in self.policy_net.parameters():
-        #     param.grad.data.clamp_(-1, 1)
-        # optimizer.step()
+        # Optimize the model
+        self.optimizer.zero_grad()
+        loss.backward()
+        for param in self.policy_net.parameters():
+            param.grad.data.clamp_(-1, 1)
+        self.optimizer.step()
 
-        # # Update the target network, copying all weights and biases in DQN
-        # if self.owner.age % TARGET_UPDATE == 0:
-        #     self.target_net.load_state_dict(self.policy_net.state_dict())
+        # Update the target network, copying all weights and biases in DQN
+        if self.owner.age % TARGET_UPDATE == 0:
+            self.target_net.load_state_dict(self.policy_net.state_dict())
 
 
 
