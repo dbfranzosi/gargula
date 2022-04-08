@@ -1,7 +1,7 @@
 import numpy as np
 
 RANDOM_SEED = 123456
-MAX_DAYS = 100
+MAX_DAYS = 1000
 MAX_HVS_IN_GROUP = 50
 GEN_SIZE = 20
 UNIT_ENERGY = 1./GEN_SIZE
@@ -11,7 +11,10 @@ AGE_BABY = 15
 AGE_ADULT = 100
 AGE_ELDER = 200
 
-NR_FEATURES = 6 # len(features)
+NR_FEATURES = 6 # len(features) visible
+
+TRAITS = ['energy_pool','food_consumption','power_attack','resistance_attack',
+            'reward_eat','reward_rest','reward_sex','reward_violence','feature1'] 
 
 def visualize_settings():
     print(  f'=== SETTINGS === \n'

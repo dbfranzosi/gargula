@@ -65,19 +65,19 @@ class TargetedAction(Action):
 class Rest(Action):
     def __init__(self, owner):
         super().__init__(owner)
-        self.reward = self.owner.genes.phenotype.reward_rest
+        self.reward = self.owner.genes.phenotype.traits['reward_rest']
         self.description = f'{owner.name} is relaxing.'
 
 class Eat(Action):
     def __init__(self, owner):
         super().__init__(owner)
-        self.reward = self.owner.genes.phenotype.reward_eat
+        self.reward = self.owner.genes.phenotype.traits['reward_eat']
         self.description = f'{owner.name} is eating.'
     def effects(self):
         super().effects()
-        amount = self.owner.genes.phenotype.food_consumption
+        amount = self.owner.genes.phenotype.traits['food_consumption']
         amount = min(amount, self.owner.group.home.food) # can't take more than available
-        amount = min(amount, self.owner.genes.phenotype.energy_pool - self.owner.energy) # can't take more than max
+        amount = min(amount, self.owner.genes.phenotype.traits['energy_pool'] - self.owner.energy) # can't take more than max
 
         self.owner.energy += amount
         self.owner.group.home.food -= amount
@@ -86,12 +86,13 @@ class TrySex(TargetedAction):
     def __init__(self, owner, target):        
 
         conditions = (target.pregnant == 0 and owner.pregnant == 0)
+        conditions = conditions and (owner != target)
         conditions = conditions and target.mind.decide_passive("accept_sex", owner)
 
         super().__init__(owner, target, conditions=conditions, energy_cost_success = 5.0*UNIT_ENERGY, 
                 energy_cost_fail = 1.0*UNIT_ENERGY)  
 
-        self.reward = self.owner.genes.phenotype.reward_sex      
+        self.reward = self.owner.genes.phenotype.traits['reward_sex']      
                 
         if owner == target:
             self.description = f'{owner.name} is touching hemself! (hem=him/her)'
@@ -110,8 +111,8 @@ class Attack(TargetedAction):
         
         # probabilistic based on attack/resistance
         if owner != target:
-            hit = (owner.genes.phenotype.power_attack - target.genes.phenotype.resistance_attack)/ \
-                    (owner.genes.phenotype.power_attack + target.genes.phenotype.resistance_attack)
+            hit = (owner.genes.phenotype.traits['power_attack'] - target.genes.phenotype.traits['resistance_attack'])/ \
+                    (owner.genes.phenotype.traits['power_attack'] + target.genes.phenotype.traits['resistance_attack'])
             if hit > 2*np.random.random()-1.0:
                 conditions = True
             else:
@@ -121,7 +122,7 @@ class Attack(TargetedAction):
 
         super().__init__(owner, target, conditions=conditions, energy_cost_success = 3.0*UNIT_ENERGY, 
                 energy_cost_fail = 3.0*UNIT_ENERGY)        
-        self.reward = self.owner.genes.phenotype.reward_violence
+        self.reward = self.owner.genes.phenotype.traits['reward_violence']
         self.description = f'{owner.name} tried to hit {target.name}.'                
         if conditions:
             self.description += f' And did it!'
@@ -129,5 +130,5 @@ class Attack(TargetedAction):
     def effects(self):
         super().effects()
         if self.conditions:            
-            self.target.energy -= self.owner.genes.phenotype.power_attack/UNIT_ENERGY
+            self.target.energy -= self.owner.genes.phenotype.traits['power_attack']*UNIT_ENERGY
 

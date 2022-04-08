@@ -27,28 +27,34 @@ def fertilization(haploid_father, haploid_mother):
     
 class Phenotype:
     '''
-    Class of phenotype, characteristics determined by the gen
+    Class of phenotype, characteristics determined by the gen. 
+    In principle it could be simply a dictionary, 
+    but let's keep it as a class in case we want to make it more general.
     '''
     def __init__(self, sequence):
         
         # energetics/metabolism 
         expression = [a*b for a,b in zip(sequence[0],sequence[1])]
-        self.energy_pool = np.dot(genetics.w['energy_pool'], expression) #total energy capacity        
-        self.food_consumption = np.dot(genetics.w['food_consumption'], expression) #total energy capacity        
-        #self.energy_egg = np.dot(genetics.w['energy_egg'], expression) #total energy capacity        
+        self.traits = {}
+        for trait in genetics.w.keys():
+            self.traits[trait] = np.dot(genetics.w[trait], expression)
+
+        # self.energy_pool = np.dot(genetics.w['energy_pool'], expression) #total energy capacity        
+        # self.food_consumption = np.dot(genetics.w['food_consumption'], expression) #total energy capacity        
+        # #self.energy_egg = np.dot(genetics.w['energy_egg'], expression) #total energy capacity        
         
-        # fight and resistance power
-        self.power_attack = np.dot(genetics.w['power_attack'], expression) 
-        self.resistance_attack = np.dot(genetics.w['resistance_attack'], expression) 
+        # # fight and resistance power
+        # self.power_attack = np.dot(genetics.w['power_attack'], expression) 
+        # self.resistance_attack = np.dot(genetics.w['resistance_attack'], expression) 
 
-        # mind reward      
-        self.reward_eat = np.dot(genetics.w['reward_eat'], expression) 
-        self.reward_rest = np.dot(genetics.w['reward_rest'], expression) 
-        self.reward_sex = np.dot(genetics.w['reward_sex'], expression)
-        self.reward_violence = np.dot(genetics.w['reward_violence'], expression)
+        # # mind reward      
+        # self.reward_eat = np.dot(genetics.w['reward_eat'], expression) 
+        # self.reward_rest = np.dot(genetics.w['reward_rest'], expression) 
+        # self.reward_sex = np.dot(genetics.w['reward_sex'], expression)
+        # self.reward_violence = np.dot(genetics.w['reward_violence'], expression)
 
-        # appearence
-        self.feature1 = np.dot(genetics.w['feature1'], expression) #e.g. hair color
+        # # appearence
+        # self.feature1 = np.dot(genetics.w['feature1'], expression) #e.g. hair color
     
 def haploid2genes(haploid_father, haploid_mother):
     return [haploid_father, haploid_mother]

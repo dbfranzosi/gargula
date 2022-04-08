@@ -173,9 +173,15 @@ class GraphDQLMind(GraphMind):
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
 
+        print(state_batch.size(), ' ', RS.size(), ' ', RR.size())
+        print('predicted=', predicted)
+        print('state=', state_action_values)
+        print('expected=', expected_state_action_values)
+        print('reward=', reward_batch)
         # # Compute Huber loss
         criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values)
+        print(loss)
 
         # Optimize the model
         self.optimizer.zero_grad()

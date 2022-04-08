@@ -1,5 +1,16 @@
 import numpy as np
+import math
 from settings import *
+
+def gene_expression(size):
+    '''
+    How genes express to phenotype.
+    I choose here a bimodal distribution so each gen either contribute a lot (~1) or very few (~0) to each trait.
+    '''
+    sample = np.concatenate((np.random.normal(0., 0.1, int(math.ceil(size/2))),
+                    np.random.normal(1., 0.1, int(math.floor(size/2)))))
+    np.random.shuffle(sample)
+    return sample
 
 class Genetics:
     '''
@@ -9,22 +20,25 @@ class Genetics:
     def __init__(self):
         
         self.w = {}
-        # metabolism
-        self.w['energy_pool'] = np.random.random(GEN_SIZE)
-        self.w['food_consumption'] = np.random.random(GEN_SIZE)
+        for trait in TRAITS:
+            self.w[trait] = gene_expression(GEN_SIZE)            
+
+        # # metabolism                
+        # self.w['energy_pool'] = gene_expression(GEN_SIZE)        
+        # self.w['food_consumption'] = gene_expression(GEN_SIZE)
         
-        # action and resistance power
-        self.w['power_attack'] = np.random.random(GEN_SIZE)        
-        self.w['resistance_attack'] = np.random.random(GEN_SIZE)        
+        # # action and resistance power
+        # self.w['power_attack'] = gene_expression(GEN_SIZE)        
+        # self.w['resistance_attack'] = gene_expression(GEN_SIZE)        
 
-        # mind reward
-        self.w['reward_eat'] = np.random.random(GEN_SIZE)        
-        self.w['reward_rest'] = np.random.random(GEN_SIZE)        
-        self.w['reward_sex'] = np.random.random(GEN_SIZE)        
-        self.w['reward_violence'] = np.random.random(GEN_SIZE)
+        # # mind reward
+        # self.w['reward_eat'] = gene_expression(GEN_SIZE)        
+        # self.w['reward_rest'] = gene_expression(GEN_SIZE)        
+        # self.w['reward_sex'] = gene_expression(GEN_SIZE)        
+        # self.w['reward_violence'] = gene_expression(GEN_SIZE)
 
-        # appearence
-        self.w['feature1'] = np.random.random(GEN_SIZE)        
+        # # appearence
+        # self.w['feature1'] = gene_expression(GEN_SIZE)        
 
 class Biology:
 
@@ -33,3 +47,4 @@ class Biology:
         self.genetics = genetics
 
 biology = Biology()
+

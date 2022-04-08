@@ -51,6 +51,7 @@ class Area:
             group.visualize()
             group.check_deaths()
             group.interact()
+            group.update_history()
 
 eden = Area(name='Eden')
 
