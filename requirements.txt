@@ -1,9 +1,9 @@
+# torch
+torch-geometric
+torch-sparse
+torch-scatter
 matplotlib
 networkx
 numpy
-torch
-torch-geometric
 dash
-torch-sparse
-torch-scatter
 pytest
