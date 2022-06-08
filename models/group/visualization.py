@@ -61,6 +61,19 @@ def plots_update(group, steps, lines_genes, lines_traits):
     
     for trait in TRAITS:         
         plot_update(y_traits[trait], lines_traits[trait])
+
+# Plotly
+
+# def iplot_init():  
+#     fig = make_subplots(rows=2, cols=2)  
+#     fig.add_bar(y=[2, 1, 3],
+#             marker=dict(color="MediumPurple"),
+#             name="b", row=1, col=1)    
+#     return fig
+
+# def iplot_update(fig, data):
+#     with fig.batch_update():
+#         fig.data[0].y = data
     
  
 

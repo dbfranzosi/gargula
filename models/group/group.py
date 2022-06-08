@@ -7,6 +7,9 @@ from .history import *
 
 
 class Group:
+    '''
+    Class to define a group of homo-virtualis.
+    '''
     
     def __init__(self, id=0, name='', home=None, hvs={}):
         self.id = id
