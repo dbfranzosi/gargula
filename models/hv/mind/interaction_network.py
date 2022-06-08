@@ -12,7 +12,9 @@ from torch.utils.data import Dataset, DataLoader
 from ..actions import nr_class_actions
 from settings import *
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+device = "cpu"
+torch.autograd.set_detect_anomaly(True)
 
 n_objects  =  MAX_HVS_IN_GROUP # number of hvs (nodes)
 object_dim = NR_FEATURES # features in visible

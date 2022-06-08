@@ -53,8 +53,8 @@ class Hv:
     
     def death(self):
         if (self.energy<0):
-            print('=== Someone Died.')
-            self.visualize()
+            #print('=== Someone Died.')
+            #self.visualize()
             del self.group.hvs[self.id]                                    
 
     def make_baby(self, mother):
@@ -68,7 +68,7 @@ class Hv:
         #baby.mind = MemoryGraphMind(baby, 1000)
         mother.pregnant += 1
 
-        print('=== A baby was born!')
+        #print('=== A baby was born!')
         #self.visualize(show_genes=True)
         #mother.visualize(show_genes=True)
         #baby.visualize(show_genes=True)

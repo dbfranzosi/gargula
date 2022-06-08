@@ -11,7 +11,8 @@ AGE_BABY = 15
 AGE_ADULT = 100
 AGE_ELDER = 200
 
-NR_FEATURES = 6 # len(features) visible
+FEATURES = ['pregnant', 'age', 'energy', 'power_attack', 'resistance_attack', 'feature1']
+NR_FEATURES = len(FEATURES) #visible
 
 TRAITS = ['energy_pool','food_consumption','power_attack','resistance_attack',
             'reward_eat','reward_rest','reward_sex','reward_violence','feature1'] 

@@ -25,11 +25,11 @@ class Area:
     def nr_groups(self):
         return len(self.groups) 
 
-    def visualize(self, show_food=True):
+    def get_info(self, show_food=True):
         str = f'Area {self.name} at day {self.clock}.'
         if show_food:
-            str += f' Food: {self.food}.'        
-        print(str)
+            str += f' Food: {self.food:.2f}.'        
+        return str
 
     def check_extinctions(self):
         group_keys = list(self.groups.keys()) # fix to avoid change in the loop
@@ -39,7 +39,8 @@ class Area:
 
     def pass_day(self):        
         self.clock += 1
-        time.sleep(self.timeunit) 
+        # time.sleep(self.timeunit) 
+        # sleep given by dash
         self.food += self.food_generation
 
         self.check_extinctions()
@@ -48,7 +49,7 @@ class Area:
         random.shuffle(group_keys) # random initiative         
         for igroup in group_keys:
             group = self.groups[igroup]
-            group.visualize()
+            #group.visualize()
             group.check_deaths()
             group.interact()
             group.update_history()

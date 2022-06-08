@@ -4,6 +4,7 @@ from models.hv.hv import Hv
 from reality.geography import eden
 import random
 from .history import *
+import pandas as pd
 
 
 class Group:
@@ -42,7 +43,7 @@ class Group:
             hv = self.hvs[ihv]
             hv.act()
             hv.aging()
-            hv.visualize(show_action=True, show_memory=True)          
+            #hv.visualize(show_action=True, show_memory=True)          
 
     def generate_gargalo(self, nr=10):
         lst_names = ['Adam', 'Eva', 'Lilith', 'Caim', 'Abel', 'Raul', 'Che', 'Karl', 'Lenin', 'José']
@@ -55,10 +56,9 @@ class Group:
             hv = Hv(group=self, name=name, haploid_father=haploid_father, haploid_mother=haploid_mother)
             hv.age = 50 # all adults 
 
-    def visualize(self):
-        str_hvs = ', '.join([hv.name for hv in self.hvs.values()])
-        #print(self.hvs.values().name)
-        print(f'Group {self.name} in area {self.home.name} has {self.nr_hvs()} homo-virtualis: {str_hvs}')
+    def get_info(self):
+        str_hvs = ', '.join([hv.name for hv in self.hvs.values()])        
+        return f'Group {self.name} in area {self.home.name} has {self.nr_hvs()} homo-virtualis: {str_hvs}'
         
     def get_indicators(self):
         indicators = self.history.memory            
@@ -86,8 +86,7 @@ class Group:
                 cnt+=1
         # print('y_gen=', y_gen)   
         #print('y_traits=', y_traits)
-        return y_gen, y_traits
-            
+        return y_gen, y_traits            
     
     def get_genes(self):
         return sum([hv.genes.sequence[0]+hv.genes.sequence[1] for hv in self.hvs.values()])/(2*self.nr_hvs())
@@ -99,6 +98,12 @@ class Group:
         for trait in traits.keys():
             traits_avg[trait] = np.mean([hv.genes.phenotype.traits[trait] for hv in self.hvs.values()])
         return traits_avg
+
+    def get_repr(self):        
+        return pd.DataFrame.from_dict({hv.id : hv.visible.features for hv in self.hvs.values()}, orient='index', columns=FEATURES)
+
+    def get_names(self):        
+        return pd.DataFrame.from_dict({hv.id : [hv.name] for hv in self.hvs.values()}, orient='index', columns=['names'])
 
     def update_history(self):
         self.history.push(self.get_genes(), self.get_traits())        
