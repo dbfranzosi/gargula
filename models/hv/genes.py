@@ -1,6 +1,7 @@
 from settings import *
 import numpy as np
 from reality.biology import biology
+from scipy.stats import poisson
 
 genetics = biology.genetics
 
@@ -13,7 +14,8 @@ class Genes:
         self.sequence = [haploid_father, haploid_mother]        
         self.phenotype = Phenotype(self.sequence)
         
-    def meiosis(self, variation=0):
+    def meiosis(self):
+        variation = poisson.rvs(biology.meiosis_variation, size=1)[0]        
         a = np.random.randint(0,2,size=GEN_SIZE)
         haploid = np.array([self.sequence[a[i]][i] for i in range(len(a))] )
         if variation > 0:

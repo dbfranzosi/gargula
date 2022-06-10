@@ -6,7 +6,6 @@ import random
 from .history import *
 import pandas as pd
 
-
 class Group:
     '''
     Class to define a group of homo-virtualis.
@@ -91,7 +90,7 @@ class Group:
     def get_genes(self):
         return sum([hv.genes.sequence[0]+hv.genes.sequence[1] for hv in self.hvs.values()])/(2*self.nr_hvs())
 
-    def get_traits(self):
+    def get_traits_avg(self):
         traits_avg = {}
         # pick one HV trait
         traits = list(self.hvs.values())[0].genes.phenotype.traits
@@ -99,14 +98,61 @@ class Group:
             traits_avg[trait] = np.mean([hv.genes.phenotype.traits[trait] for hv in self.hvs.values()])
         return traits_avg
 
-    def get_repr(self):        
+    def get_features(self):        
         return pd.DataFrame.from_dict({hv.id : hv.visible.features for hv in self.hvs.values()}, orient='index', columns=FEATURES)
 
-    def get_names(self):        
-        return pd.DataFrame.from_dict({hv.id : [hv.name] for hv in self.hvs.values()}, orient='index', columns=['names'])
+    def get_traits(self):
+        traits_dict = dict.fromkeys(TRAITS)        
+        k, v = self.hvs.keys(), self.hvs.values()        
+        for trait in TRAITS:
+            traits_dict[trait] = [hv.genes.phenotype.traits[trait] for hv in v]
+        df = pd.DataFrame.from_dict(traits_dict)
+        df['id'] = k        
+        df = df.set_index('id') 
+        return df
+
+    def get_description(self):        
+        return pd.DataFrame.from_dict({hv.id : [hv.action.description] for hv in self.hvs.values()}, orient='index', columns=['description'])
 
     def update_history(self):
-        self.history.push(self.get_genes(), self.get_traits())        
+        self.history.push(self.get_genes(), self.get_traits_avg())        
+
+    def get_profiles(self):                
+        #profile = pd.DataFrame.from_dict({hv.id : hv.visible.features for hv in self.hvs.values()}, orient='index', columns=FEATURES)        
+        profile = self.get_features()
+        to_drop = [trait for trait in TRAITS if trait in FEATURES]
+        profile.drop(to_drop, axis=1, inplace=True)     
+        
+        traits = self.get_traits()
+        description = self.get_description()
+               
+        profile = pd.concat([profile, traits, description], axis=1)                     
+
+        return profile
+
+    def get_family(self):        
+        family = []
+        hvids = self.hvs.keys()
+        generations = [hv.generation for hv in self.hvs.values()]
+        min_generation = min(generations)
+        set_generations = set(generations)
+        i = dict.fromkeys(set_generations, 0)
+        for hvid, hv in self.hvs.items():  
+            generation = hv.generation 
+            x_max = generations.count(generation)  
+            y_max = len(set_generations)
+            family.append({'data': {'id': hvid, 'label': hv.name},
+                            'position': {'x': i[generation]*600./x_max, 'y': (hv.generation - min_generation) * 500./y_max}})
+            i[generation] += 1
+            #print(family)
+            if hv.parents is None:
+                pass
+            else:          
+                if (hv.parents[0] in hvids):      
+                    family.append({'data': {'source': hvid, 'target': hv.parents[0]}})
+                if (hv.parents[1] in hvids):      
+                    family.append({'data': {'source': hvid, 'target': hv.parents[1]}})          
+        return family
 
 gargalo = Group(name='Gargalo', home=eden)
 gargalo.generate_gargalo()

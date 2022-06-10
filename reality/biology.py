@@ -45,6 +45,7 @@ class Biology:
     def __init__(self, genetics = Genetics(), gestationtime=90):            
         self.gestationtime = gestationtime        
         self.genetics = genetics
+        self.meiosis_variation = 0.1 # mean value of Poisson distribution for nr of genes suffering mutation
 
 biology = Biology()
 

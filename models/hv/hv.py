@@ -25,6 +25,7 @@ class Hv:
         else:
             self.energy = energy
         self.name = name
+        self.parents = None
         self.visible = Visible(self)                
         self.action = Rest(self) 
 
@@ -58,13 +59,14 @@ class Hv:
             del self.group.hvs[self.id]                                    
 
     def make_baby(self, mother):
-        haploid_father = self.genes.meiosis(variation=2)
-        haploid_mother = mother.genes.meiosis(variation=2)
+        haploid_father = self.genes.meiosis()
+        haploid_mother = mother.genes.meiosis()
         #generation = max(self.generation, mother.generation) + 1
         generation = mother.generation + 1 # follows mother's generation
         baby_name = f'{mother.name.split()[0]} {generation}'
         baby = Hv(group=self.group, name=baby_name, haploid_father=haploid_father, 
                 haploid_mother=haploid_mother, energy=5*UNIT_ENERGY, generation=generation) 
+        baby.parents = [self.id, mother.id]
         #baby.mind = MemoryGraphMind(baby, 1000)
         mother.pregnant += 1
 
