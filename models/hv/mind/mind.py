@@ -123,14 +123,14 @@ class GraphMind(MemoryGraphMind):
                 # put in batch form with 1 entry                           
                 self.action = predicted.argmax().expand(1)                 
                 target_nr, action_nr = divmod(int(self.action), nr_class_actions) 
-                action_code = [lst_class_actions[action_nr], target_nr]                
+                action_code = [ACTIONS[action_nr], target_nr]                
                 action = get_action(action_code, self.owner)                  
         else:
             # exploration
             nr_hvs = self.group.nr_hvs()
             target_nr, action_nr = random.randrange(0, nr_hvs), random.randrange(0, nr_class_actions)
             self.action = torch.tensor([target_nr*nr_hvs + action_nr], device=device, dtype=torch.int64)
-            action_code = [lst_class_actions[action_nr], target_nr]            
+            action_code = [ACTIONS[action_nr], target_nr]            
             action = get_action(action_code, self.owner)              
         self.reward = torch.tensor([action.reward], device=device, dtype=torch.float) 
         return action
@@ -157,10 +157,20 @@ class GraphDQLMind(GraphMind):
         # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
+        
+        # print('sb=', state_batch.shape)
+        # print('actb=', action_batch)
+        
+        predicted = self.policy_net(state_batch, RS, RR)        
 
-        predicted = self.policy_net(state_batch, RS, RR)
+        # print('pred=', predicted.shape)
+        # print('pview=', predicted.view(BATCH_SIZE, -1).shape)
+
         # Flatten O[Do, Np] to pick the action (one-index)
         state_action_values = predicted.view(BATCH_SIZE, -1).gather(1, action_batch)
+        
+        # print('sact=', state_action_values)
+        # print('===============')
         
         # Compute V(s_{t+1}) for all next states.
         # Expected values of actions are computed based

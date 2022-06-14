@@ -62,7 +62,7 @@ class Hv:
         haploid_father = self.genes.meiosis()
         haploid_mother = mother.genes.meiosis()
         #generation = max(self.generation, mother.generation) + 1
-        generation = mother.generation + 1 # follows mother's generation
+        generation = max(self.generation, mother.generation) + 1 
         baby_name = f'{mother.name.split()[0]} {generation}'
         baby = Hv(group=self.group, name=baby_name, haploid_father=haploid_father, 
                 haploid_mother=haploid_mother, energy=5*UNIT_ENERGY, generation=generation) 

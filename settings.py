@@ -17,6 +17,8 @@ NR_FEATURES = len(FEATURES) #visible
 TRAITS = ['energy_pool','food_consumption','power_attack','resistance_attack',
             'reward_eat','reward_rest','reward_sex','reward_violence','feature1'] 
 
+ACTIONS = ['try_sex', 'attack', 'eat', 'rest']
+
 def visualize_settings():
     print(  f'=== SETTINGS === \n'
             f'RANDOM_SEED={RANDOM_SEED} \n' 

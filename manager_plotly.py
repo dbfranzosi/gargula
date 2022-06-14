@@ -25,8 +25,7 @@ app.layout = html.Div([
         # Constantly updated
         html.H4(id='info_area'),        
         html.H4(id='info_group'),         
-        dcc.Graph(id='fig_hvs'),        
-        html.H4('Genetic survey'),
+        dcc.Graph(id='fig_hvs'),                
         dcc.Graph(id='fig_gene'),        
         dcc.Interval(
             id='interval-component',
@@ -35,7 +34,7 @@ app.layout = html.Div([
         )
     ]),
     html.Div([
-    html.P("Dash Cytoscape:"),
+    html.P("Family tree:"),
     cyto.Cytoscape(
         id='cytoscape',        
         layout={'name': 'preset', 'animate': True},
@@ -88,26 +87,23 @@ def update_graph_live(n):
     ))
 
     # Genetic survey
-    data_gene = gargalo.get_genes()
-    y_genes, y_traits = gargalo.get_indicators()     
+    data_gene = gargalo.history.get_genes()
+    y_genes, y_traits, y_actions = gargalo.history.get_indicators()     
        
-    fig_genes = make_subplots(rows=2, cols=2, subplot_titles=["Averaged gen values", "", "Averaged gen values", "Averaged trait values"])
+    fig_genes = make_subplots(rows=2, cols=2, 
+                subplot_titles=["Averaged gen values", "", "Averaged trait values", "Nr of actions"])
     fig_genes.add_trace(go.Bar(y=data_gene, showlegend=False), row=1, col=1)
     #fig_genes.add_trace(go.Scatter(y=[2, 1, 3], mode="lines", showlegend=False), row=1, col=2)    
     for i in range(GEN_SIZE):
-        fig_genes.add_trace(go.Scatter(y=y_genes[i], mode="lines", showlegend=False), row=2, col=1)
+        fig_genes.add_trace(go.Scatter(y=y_genes[i], mode="lines", showlegend=False), row=1, col=2)
     for trait in TRAITS:                 
-        fig_genes.add_trace(go.Scatter(y=y_traits[trait], mode="lines", name=trait), row=2, col=2)        
+        fig_genes.add_trace(go.Scatter(y=y_traits[trait], mode="lines", name=trait), row=2, col=1)        
+    for action in ACTIONS:                 
+        fig_genes.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)                
 
     # family
     family = gargalo.get_family()    
-    # family = [
-    #         {'data': {'id': 'ca', 'label': 'Canada'}}, 
-    #         {'data': {'source': 'ca', 'target': 'on'}}, 
-    #         {'data': {'id': 'on', 'label': 'Ontario'}}, 
-    #         {'data': {'id': 'qc', 'label': 'Quebec'}},            
-    #         {'data': {'source': 'ca', 'target': 'qc'}}
-    #     ]
+    
 
     return info_area, info_group, fig_hvs, fig_genes, family
     

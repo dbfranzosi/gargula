@@ -14,7 +14,7 @@ for i in range(MAX_HVS_IN_GROUP, 2*MAX_HVS_IN_GROUP):
 lst_actions[nr_targeted_actions*MAX_HVS_IN_GROUP + nr_nontarg_actions -2] = ['eat', -1] 
 lst_actions[nr_targeted_actions*MAX_HVS_IN_GROUP + nr_nontarg_actions -1] = ['rest', -1] # rest is always the last action
 
-lst_class_actions = ['try_sex', 'attack', 'eat', 'rest']
+#ACTIONS = ['try_sex', 'attack', 'eat', 'rest'] #defined in settings
 
 # Passive actions return a boolean
 lst_passive_actions = {}
@@ -48,6 +48,7 @@ class Action:
         self.description = description
         self.conditions = conditions
         self.reward = reward
+        self.name = 'Generic action'
 
     def effects(self):
         if (self.conditions):
@@ -67,12 +68,14 @@ class Rest(Action):
         super().__init__(owner)
         self.reward = self.owner.genes.phenotype.traits['reward_rest']
         self.description = f'{owner.name} is relaxing.'
+        self.name = 'rest'
 
 class Eat(Action):
     def __init__(self, owner):
         super().__init__(owner)
         self.reward = self.owner.genes.phenotype.traits['reward_eat']
         self.description = f'{owner.name} is eating.'
+        self.name = 'eat'
     def effects(self):
         super().effects()
         amount = self.owner.genes.phenotype.traits['food_consumption']
@@ -87,11 +90,11 @@ class TrySex(TargetedAction):
 
         conditions = (target.pregnant == 0 and owner.pregnant == 0)
         conditions = conditions and (owner != target)
-        conditions = conditions and target.mind.decide_passive("accept_sex", owner)
+        conditions = conditions and target.mind.decide_passive("accept_sex", owner)        
 
         super().__init__(owner, target, conditions=conditions, energy_cost_success = 5.0*UNIT_ENERGY, 
                 energy_cost_fail = 1.0*UNIT_ENERGY)  
-
+        self.name = 'try_sex'
         self.reward = self.owner.genes.phenotype.traits['reward_sex']      
                 
         if owner == target:
@@ -124,6 +127,7 @@ class Attack(TargetedAction):
                 energy_cost_fail = 3.0*UNIT_ENERGY)        
         self.reward = self.owner.genes.phenotype.traits['reward_violence']
         self.description = f'{owner.name} tried to hit {target.name}.'                
+        self.name = 'attack'
         if conditions:
             self.description += f' And did it!'
 
