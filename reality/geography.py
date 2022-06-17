@@ -54,6 +54,8 @@ class Area:
             group.interact()
             group.history.update()
 
+        return True
+
 eden = Area(name='Eden')
 
  

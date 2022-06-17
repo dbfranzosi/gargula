@@ -10,38 +10,61 @@ import pandas as pd
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
+from dash.exceptions import PreventUpdate
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 import dash_cytoscape as cyto
+import time
 
+holder = True
 visualize_settings()
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 app.layout = html.Div([
     html.Div([
-        # Constantly updated
-        html.H4(id='info_area'),        
-        html.H4(id='info_group'),         
-        dcc.Graph(id='fig_hvs'),                
-        dcc.Graph(id='fig_gene'),        
         dcc.Interval(
             id='interval-component',
             interval=eden.timeunit*1000, # in milliseconds
             n_intervals=0
-        )
+        ),
+        # Constantly updated
+        html.H4(id='info_area'),        
+        html.H4(id='info_group'),         
+        dcc.Graph(id='fig_hvs'),                
+        dcc.Graph(id='fig_gene')        
     ]),
     html.Div([
     html.P("Family tree:"),
     cyto.Cytoscape(
         id='cytoscape',        
-        layout={'name': 'preset', 'animate': True},
-        #style={'width': '10px', 'height': '10px'}
-        style={'width': '600px', 'height': '500px'}
-        #style={'width': '100%', 'height': '500px'}
-    )
+        layout={'name': 'preset', 'animate': True},        
+        style={'width': '600px', 'height': '500px'},        
+        stylesheet=[            
+            {
+                'selector': 'node',
+                'style': {
+                    'label': 'data(label)'
+                }
+            },
+            {
+                'selector': '[role *= "mother"]',
+                'style': {
+                    'line-color': 'blue'
+                }
+            },
+            {
+                'selector': '[role *= "father"]',
+                'style': {
+                    'line-color': 'red'
+                }
+            }
+        ]
+    ),
+    dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
+    dcc.Graph(id='fig_hv')
     ])
 ])
 
@@ -50,10 +73,18 @@ app.layout = html.Div([
             Output('info_group', 'children'),
             Output('fig_hvs', 'figure'),
             Output('fig_gene', 'figure'),
-            Output('cytoscape', 'elements'),
+            Output('cytoscape', 'elements'),            
             Input('interval-component', 'n_intervals'))
-def update_graph_live(n):        
-    eden.pass_day()       
+def update_graph_live(n): 
+    global holder 
+    #print(holder)
+    if not holder:
+        raise PreventUpdate 
+    holder = False
+    #before = time.time()
+    holder = eden.pass_day()       
+    #after = time.time()    
+    #print('interval=', after - before)
 
     # Info
     info_area = eden.get_info() 
@@ -102,12 +133,43 @@ def update_graph_live(n):
         fig_genes.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)                
 
     # family
-    family = gargalo.get_family()    
-    
+    family = gargalo.get_family()   
 
     return info_area, info_group, fig_hvs, fig_genes, family
-    
 
-if __name__ == '__main__':
+@app.callback(Output('fig_hv', 'figure'),            
+            Output('dropdown-hv', 'options'),
+            Input('interval-component', 'n_intervals'),
+            Input('dropdown-hv', 'value'))
+def update_hv_graph(n, hv_sel):
+
+    lst_ids = gargalo.get_list_ids()
+    print(lst_ids)
+    if hv_sel not in lst_ids:    
+        raise PreventUpdate 
+    
+    print('hv_sel=', hv_sel)    
+    hv = gargalo.hvs[hv_sel]    
+    genes = hv.get_genes()
+    traits = hv.genes.phenotype.traits
+    print(genes)
+
+    fig_hv = make_subplots(rows=1, cols=2, 
+                subplot_titles=["gen values", "", "trait values", "Nr of actions"])
+    fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
+    fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)
+    
+    # for i in range(GEN_SIZE):
+    #     fig_hv.add_trace(go.Scatter(y=y_genes[i], mode="lines", showlegend=False), row=1, col=2)
+    # for trait in TRAITS:                 
+    #     fig_hv.add_trace(go.Scatter(y=y_traits[trait], mode="lines", name=trait), row=2, col=1)        
+    # for action in ACTIONS:                 
+    #     fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)     
+    # 
+
+    return fig_hv, lst_ids  
+
+
+if __name__ == '__main__':    
     app.run_server(debug=True)
 

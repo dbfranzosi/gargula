@@ -22,6 +22,9 @@ class Group:
 
     def nr_hvs(self):
         return len(self.hvs)  
+    
+    def get_list_ids(self):
+        return list(self.hvs.keys())
 
     def extinction(self):
         if (self.nr_hvs() <= 0):
@@ -109,10 +112,15 @@ class Group:
                 pass
             else:          
                 if (hv.parents[0] in hvids):      
-                    family.append({'data': {'source': hvid, 'target': hv.parents[0]}})
+                    family.append({'data': {'source': hvid, 'target': hv.parents[0], 'role': 'father'}})
                 if (hv.parents[1] in hvids):      
-                    family.append({'data': {'source': hvid, 'target': hv.parents[1]}})          
+                    family.append({'data': {'source': hvid, 'target': hv.parents[1], 'role': 'mother'}})          
         return family
+
+    def save(self):
+        pass
+    def load(self):
+        pass     
 
 gargalo = Group(name='Gargalo', home=eden)
 gargalo.generate_gargalo()

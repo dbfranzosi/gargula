@@ -90,6 +90,8 @@ class Hv:
         if show_memory:
             print('memory=', self.mind.memory.__len__())
         
+    def get_genes(self):
+        return self.genes.sequence[0]+self.genes.sequence[1]
 
         
 

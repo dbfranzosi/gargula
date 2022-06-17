@@ -4,7 +4,7 @@ from collections import namedtuple, deque
 Indicators = namedtuple('Indicators',
                         ('genes', 'traits', 'actions'))
 
-class GroupHistory:
+class HvHistory:
 
     def __init__(self, owner, capacity):
         self.memory = deque([], maxlen=capacity)
@@ -22,12 +22,6 @@ class GroupHistory:
                 
         indicators = Indicators(*zip(*indicators))        
         length = indicators.__len__()        
-
-        # print('ind=',indicators)       
-        # print('ind_dict=', indicators._asdict())
-        # for name, value in indicators._asdict().items():
-        #     print('name=', name)
-        #     print('valeu=', value)
         
         val = np.array(indicators.genes)        
         val = np.transpose(val)         
@@ -43,24 +37,16 @@ class GroupHistory:
         
         return y_gen, y_traits, y_actions
     
-    def get_genes(self):       
-        # print('gens=', [hv.genes.sequence[0]+hv.genes.sequence[1] for hv in self.owner.hvs.values()])
-        # print('sum gen=', np.sum([hv.genes.sequence[0]+hv.genes.sequence[1] for hv in self.owner.hvs.values()], axis=0)/(2*self.owner.nr_hvs())) 
-        return np.sum([hv.genes.sequence[0]+hv.genes.sequence[1] for hv in self.owner.hvs.values()], axis=0)/(2*self.owner.nr_hvs())
+    def get_genes(self):               
+        return self.owner.genes.sequence[0]+self.owner.genes.sequence[1]
     
-    def get_traits_avg(self):        
-        traits_avg = np.zeros(len(TRAITS))
-        traits_avg = np.array([np.mean([hv.genes.phenotype.traits[trait] for hv in self.owner.hvs.values()]) for trait in TRAITS])
-        return traits_avg
+    def get_traits(self):                
+        traits = [self.owner.genes.phenotype.traits[trait] for trait in TRAITS]
+        return traits
 
-    def get_actions_avg(self):        
-        actions = [hv.action.name for hv in self.owner.hvs.values()]        
-        actions_avg = [actions.count(action) for action in ACTIONS]
-        return actions_avg
+    def get_actions(self):                
+        return [self.owner.action.name]
 
     def update(self):
-        self.push(self.get_genes(), self.get_traits_avg(), self.get_actions_avg())   
+        self.push(self.get_genes(), self.get_traits(), self.get_actions())   
 
-    
-
-    
