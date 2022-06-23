@@ -2,13 +2,14 @@ from settings import *
 from collections import namedtuple, deque
 
 Indicators = namedtuple('Indicators',
-                        ('genes', 'traits', 'actions'))
+                        ('action_counter'))
 
 class HvHistory:
 
     def __init__(self, owner, capacity):
         self.memory = deque([], maxlen=capacity)
         self.owner = owner
+        self.capacity = capacity        
 
     def push(self, *args):
         """Save a transition"""        
@@ -18,35 +19,34 @@ class HvHistory:
         return len(self.memory)
 
     def get_indicators(self):
-        indicators = self.memory             
-                
+        indicators = self.memory    
+        print(indicators)
         indicators = Indicators(*zip(*indicators))        
         length = indicators.__len__()        
+
+        print('ind=',indicators)       
+        print('ind_dict=', indicators._asdict())
+        for name, value in indicators._asdict().items():
+            print('name=', name)
+            print('value=', value)
         
-        val = np.array(indicators.genes)        
-        val = np.transpose(val)         
-        y_gen = {gen : val[gen] for gen in range(GEN_SIZE)}
-
-        val = np.array(indicators.traits)        
+        val = np.array(indicators.action_counter)            
         val = np.transpose(val)             
-        y_traits = {TRAITS[i] : val[i] for i in range(len(TRAITS))}                        
-
-        val = np.array(indicators.actions)        
-        val = np.transpose(val)             
+        print(val)
         y_actions = {ACTIONS[i] : val[i] for i in range(len(ACTIONS))}                        
         
-        return y_gen, y_traits, y_actions
-    
-    def get_genes(self):               
-        return self.owner.genes.sequence[0]+self.owner.genes.sequence[1]
-    
-    def get_traits(self):                
-        traits = [self.owner.genes.phenotype.traits[trait] for trait in TRAITS]
-        return traits
+        return y_actions    
 
-    def get_actions(self):                
-        return [self.owner.action.name]
+    def count_actions(self):   
+        if (self.__len__() == 0):
+            action_counter = {ACTIONS[i] : 0 for i in range(len(ACTIONS))}
+        else:
+            action_counter = self.memory[-1]
+        print(action_counter)
+
+        #y_actions[self.owner.action.name] += 1        
+        #return y_actions
 
     def update(self):
-        self.push(self.get_genes(), self.get_traits(), self.get_actions())   
+        self.push(self.count_actions())   
 

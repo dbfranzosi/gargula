@@ -144,29 +144,23 @@ def update_graph_live(n):
 def update_hv_graph(n, hv_sel):
 
     lst_ids = gargalo.get_list_ids()
-    print(lst_ids)
+    #print(lst_ids)
     if hv_sel not in lst_ids:    
         raise PreventUpdate 
     
-    print('hv_sel=', hv_sel)    
+    #print('hv_sel=', hv_sel)    
     hv = gargalo.hvs[hv_sel]    
     genes = hv.get_genes()
     traits = hv.genes.phenotype.traits
-    print(genes)
+    #y_actions = hv.history.get_indicators()
 
-    fig_hv = make_subplots(rows=1, cols=2, 
+    fig_hv = make_subplots(rows=2, cols=2, 
                 subplot_titles=["gen values", "", "trait values", "Nr of actions"])
     fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
-    fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)
-    
-    # for i in range(GEN_SIZE):
-    #     fig_hv.add_trace(go.Scatter(y=y_genes[i], mode="lines", showlegend=False), row=1, col=2)
-    # for trait in TRAITS:                 
-    #     fig_hv.add_trace(go.Scatter(y=y_traits[trait], mode="lines", name=trait), row=2, col=1)        
+    fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)        
     # for action in ACTIONS:                 
-    #     fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)     
-    # 
-
+    #     fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=1)     
+    
     return fig_hv, lst_ids  
 
 

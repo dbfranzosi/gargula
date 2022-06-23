@@ -53,6 +53,12 @@ class Area:
             group.check_deaths()
             group.interact()
             group.history.update()
+            # Save in csv file
+            if (self.clock % group.history.capacity == 0):
+                if (int(self.clock / group.history.capacity) == 1):
+                    group.history.save(header=True)
+                else:
+                    group.history.save()
 
         return True
 

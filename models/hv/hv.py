@@ -4,6 +4,7 @@ from .mind.mind import *
 from .visible import Visible
 from .actions import Rest
 from settings import *
+from .history import HvHistory
 
 id_last = 0
 
@@ -33,6 +34,8 @@ class Hv:
         #self.mind = MemoryGraphMind(self, 1000)
         #self.mind = GraphMind(self, 1000)
         self.mind = GraphDQLMind(self, 1000)
+
+        self.history = HvHistory(self, 200)
 
     def act(self):
         self.action = self.mind.decide_action()        

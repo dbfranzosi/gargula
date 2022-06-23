@@ -1,5 +1,7 @@
 from settings import *
 from collections import namedtuple, deque
+import pandas as pd
+#import h5py
 
 Indicators = namedtuple('Indicators',
                         ('genes', 'traits', 'actions'))
@@ -9,6 +11,7 @@ class GroupHistory:
     def __init__(self, owner, capacity):
         self.memory = deque([], maxlen=capacity)
         self.owner = owner
+        self.capacity = capacity
 
     def push(self, *args):
         """Save a transition"""        
@@ -53,14 +56,27 @@ class GroupHistory:
         traits_avg = np.array([np.mean([hv.genes.phenotype.traits[trait] for hv in self.owner.hvs.values()]) for trait in TRAITS])
         return traits_avg
 
-    def get_actions_avg(self):        
+    def get_actions_count(self):        
         actions = [hv.action.name for hv in self.owner.hvs.values()]        
-        actions_avg = [actions.count(action) for action in ACTIONS]
-        return actions_avg
+        actions_count = np.array([actions.count(action) for action in ACTIONS])
+        return actions_count
 
     def update(self):
-        self.push(self.get_genes(), self.get_traits_avg(), self.get_actions_avg())   
+        self.push(self.get_genes(), self.get_traits_avg(), self.get_actions_count())   
 
-    
+    def to_df(self):
+        y_gen, y_traits, y_actions = self.get_indicators()        
+        return pd.DataFrame(y_gen), pd.DataFrame(y_traits), pd.DataFrame(y_actions)        
+
+    def save(self, header=False): 
+        df_gen, df_traits, df_actions = self.to_df()
+
+        with open('./data/'+self.owner.name+'_genes.csv', 'a') as f:
+            df_gen.to_csv(f, mode='a', index=False, header=header)
+        with open('./data/'+self.owner.name+'_traits.csv', 'a') as f:
+            df_traits.to_csv(f, mode='a', index=False, header=header)
+        with open('./data/'+self.owner.name+'_actions.csv', 'a') as f:
+            df_actions.to_csv(f, mode='a', index=False, header=header)
+        
 
     

@@ -18,7 +18,7 @@ class Group:
         if home:
             home.groups[id] = self
         self.hvs = hvs
-        self.history = GroupHistory(self, 100)
+        self.history = GroupHistory(self, 5)
 
     def nr_hvs(self):
         return len(self.hvs)  
@@ -45,7 +45,7 @@ class Group:
             hv = self.hvs[ihv]
             hv.act()
             hv.aging()
-            #hv.visualize(show_action=True, show_memory=True)          
+            #hv.history.update()
 
     def generate_gargalo(self, nr=10):
         lst_names = ['Adam', 'Eva', 'Lilith', 'Caim', 'Abel', 'Raul', 'Che', 'Karl', 'Lenin', 'José']
@@ -122,7 +122,7 @@ class Group:
     def load(self):
         pass     
 
-gargalo = Group(name='Gargalo', home=eden)
+gargalo = Group(name='Gargalo5', home=eden)
 gargalo.generate_gargalo()
 #conception = Group(name='Conception')
 

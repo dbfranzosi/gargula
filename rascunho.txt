@@ -1,0 +1,34 @@
+with h5py.File('./data/'+filename, 'a') as hf:
+
+            y_gen, y_traits, y_actions = self.get_indicators()
+            
+            #print(y_gen)            
+            #hf.require_dataset('genes', shape=(0, genes.shape[0]), dtype='float64', chunks=True, maxshape=(None, genes.shape[0]))
+            if (list(hf.keys()) == []):
+                genes = hf.create_group("genes")
+                traits = hf.create_group("traits")
+                actions = hf.create_group("actions")
+
+                for k, v in y_gen.items():
+                    print(v)
+                    print(v.shape)                    
+                    genes.create_dataset(k, data=v, compression="gzip", chunks=True, maxshape=(None, 1))
+            
+            else:
+                genes = hf['genes']
+                print(list(genes.keys()))
+            #     hf['genes'].resize((hf['genes'].shape[0] + genes.shape[0]), axis=0)
+            #     hf['genes'][-genes.shape[0]:] = genes
+
+            print(list(hf.keys()))
+            # print("Genes dataset has shape {}".format(hf['genes'].shape))
+
+
+            # f.create_dataset('genes', data=new_data, compression="gzip", chunks=True, maxshape=(None,64,64))            
+            # f.create_dataset('traits', data=new_label, compression="gzip", chunks=True, maxshape=(None,1)) 
+
+            # f['data'].resize((f['data'].shape[0] + new_data.shape[0]), axis=0)
+            # f['data'][-new_data.shape[0]:] = new_data
+
+            # f['label'].resize((f['label'].shape[0] + new_label.shape[0]), axis=0)
+            # f['label'][-new_label.shape[0]:] = new_label
