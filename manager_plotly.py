@@ -27,7 +27,7 @@ app.layout = html.Div([
     html.Div([
         dcc.Interval(
             id='interval-component',
-            interval=eden.timeunit*1000, # in milliseconds
+            interval=eden.timeunit*2000, # in milliseconds
             n_intervals=0
         ),
         # Constantly updated
@@ -63,7 +63,9 @@ app.layout = html.Div([
             }
         ]
     ),
-    dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
+    dcc.Input(id="input-hv", type="number", placeholder="Id of the hv", debounce=True),
+    html.H4(id='info_hv'),        
+    #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
     dcc.Graph(id='fig_hv')
     ])
 ])
@@ -73,9 +75,12 @@ app.layout = html.Div([
             Output('info_group', 'children'),
             Output('fig_hvs', 'figure'),
             Output('fig_gene', 'figure'),
-            Output('cytoscape', 'elements'),            
-            Input('interval-component', 'n_intervals'))
-def update_graph_live(n): 
+            Output('cytoscape', 'elements'), 
+            Output('info_hv', 'children'), 
+            Output('fig_hv', 'figure'),             
+            Input('interval-component', 'n_intervals'),
+            Input('input-hv', 'value'))
+def update_graph_live(n, hv_sel): 
     global holder 
     #print(holder)
     if not holder:
@@ -84,7 +89,7 @@ def update_graph_live(n):
     #before = time.time()
     holder = eden.pass_day()       
     #after = time.time()    
-    #print('interval=', after - before)
+    #print('interval=', after - before)    
 
     # Info
     info_area = eden.get_info() 
@@ -135,33 +140,30 @@ def update_graph_live(n):
     # family
     family = gargalo.get_family()   
 
-    return info_area, info_group, fig_hvs, fig_genes, family
-
-@app.callback(Output('fig_hv', 'figure'),            
-            Output('dropdown-hv', 'options'),
-            Input('interval-component', 'n_intervals'),
-            Input('dropdown-hv', 'value'))
-def update_hv_graph(n, hv_sel):
-
-    lst_ids = gargalo.get_list_ids()
-    #print(lst_ids)
-    if hv_sel not in lst_ids:    
-        raise PreventUpdate 
-    
-    #print('hv_sel=', hv_sel)    
-    hv = gargalo.hvs[hv_sel]    
-    genes = hv.get_genes()
-    traits = hv.genes.phenotype.traits
-    #y_actions = hv.history.get_indicators()
-
+    # Hv panel
+    lst_ids = gargalo.get_list_ids()   
+    # add list of hv to info
+    info_hv = 'This homo-virtualis is not in the group.'
     fig_hv = make_subplots(rows=2, cols=2, 
-                subplot_titles=["gen values", "", "trait values", "Nr of actions"])
-    fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
-    fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)        
-    # for action in ACTIONS:                 
-    #     fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=1)     
+                    subplot_titles=["gen values", "", "trait values", "Nr of actions"])     
     
-    return fig_hv, lst_ids  
+    #print('hv_sel=', hv_sel)  
+    if hv_sel in lst_ids:           
+        hv = gargalo.hvs[hv_sel]    
+        info_hv = hv.get_info(show_genes=False, show_action=True, show_visible=False)        
+        genes = hv.get_genes()
+        traits = hv.genes.phenotype.traits
+        y_actions = hv.history.get_indicators()
+        #print('y_actions=', y_actions)
+        
+        fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
+        fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)        
+        for action in ACTIONS:                 
+            fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=1)     
+
+    return info_area, info_group, fig_hvs, fig_genes, family, info_hv, fig_hv 
+
+
 
 
 if __name__ == '__main__':    

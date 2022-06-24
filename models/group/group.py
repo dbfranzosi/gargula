@@ -18,7 +18,7 @@ class Group:
         if home:
             home.groups[id] = self
         self.hvs = hvs
-        self.history = GroupHistory(self, 5)
+        self.history = GroupHistory(self, 100)
 
     def nr_hvs(self):
         return len(self.hvs)  
@@ -45,7 +45,7 @@ class Group:
             hv = self.hvs[ihv]
             hv.act()
             hv.aging()
-            #hv.history.update()
+            hv.history.update()
 
     def generate_gargalo(self, nr=10):
         lst_names = ['Adam', 'Eva', 'Lilith', 'Caim', 'Abel', 'Raul', 'Che', 'Karl', 'Lenin', 'José']
@@ -61,9 +61,7 @@ class Group:
     def get_info(self):
         str_hvs = ', '.join([hv.name for hv in self.hvs.values()])        
         return f'Group {self.name} in area {self.home.name} has {self.nr_hvs()} homo-virtualis: {str_hvs}'
-        
     
-
     def get_features(self):        
         return pd.DataFrame.from_dict({hv.id : hv.visible.features for hv in self.hvs.values()}, orient='index', columns=FEATURES)
 
@@ -122,7 +120,7 @@ class Group:
     def load(self):
         pass     
 
-gargalo = Group(name='Gargalo5', home=eden)
+gargalo = Group(name='Gargalo6', home=eden)
 gargalo.generate_gargalo()
 #conception = Group(name='Conception')
 

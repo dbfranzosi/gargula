@@ -80,7 +80,7 @@ class Hv:
 
         return baby
 
-    def visualize(self, show_genes=False, show_action=False, show_memory = False, show_visible=False):
+    def get_info(self, show_genes=False, show_action=False, show_visible=False):
         str = f'{self.name}({self.id}): age={self.age}, energy={self.energy}, pregnant={self.pregnant}. '
         if show_action:
             str += f'{self.action.description}'
@@ -89,9 +89,8 @@ class Hv:
             str += f'{self.genes.sequence[1]}'
         if show_visible:
             str += f'\n{self.visible.features}\n'    
-        print(str)
-        if show_memory:
-            print('memory=', self.mind.memory.__len__())
+        return str
+        
         
     def get_genes(self):
         return self.genes.sequence[0]+self.genes.sequence[1]
