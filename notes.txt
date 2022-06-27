@@ -1,16 +1,16 @@
 TODO:
-- Make single homo-virtualis history and panel visualization.
-- Record memory in dataframe style to be analysed.
+- Define metrics for the analysis. Collaboration, actions randomness...
+- Implement save/load hv/group from/to area 
+    - Add many groups together in area.
+- Implement interaction with other objects (like area). Food as visible. Directed action is eat for example.
+- Implement teaching.
+- Implement mind characteristics as traits.
+- Make homo-virtualis visual representation with markers.
+
 - Fix the 2 bugs that happens esporadically. (related to time)
     https://community.plotly.com/t/1-sec-refresh-interval-for-a-5-sec-task/27624/4
+    (seems to be fixed)
 
-- Define metrics for the analysis. Collaboration, actions randomness...
-
-- Implement save/load group from/to area (add many groups togethers).
-- Implement interaction with other objects (like area). Food as visible. Directed action is eat for example.
-
-- Implement teaching.
-
-- Implement mind characteristics as traits.
-
-- Make homo-virtualis visual representation with markers.
+DONE:
+- Make single homo-virtualis history and panel visualization.
+- Record memory in dataframe style to be analysed.

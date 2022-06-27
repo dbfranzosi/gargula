@@ -135,8 +135,8 @@ def update_graph_live(n, hv_sel):
     for trait in TRAITS:                 
         fig_genes.add_trace(go.Scatter(y=y_traits[trait], mode="lines", name=trait), row=2, col=1)        
     for action in ACTIONS:                 
-        fig_genes.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)                
-
+        fig_genes.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)   
+    
     # family
     family = gargalo.get_family()   
 
@@ -159,7 +159,22 @@ def update_graph_live(n, hv_sel):
         fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
         fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)        
         for action in ACTIONS:                 
-            fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=1)     
+            fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)    
+
+    fig_hv.update_layout(
+    autosize=False,
+    width=1500,
+    height=800,
+    # margin=dict(
+    #     l=50,
+    #     r=50,
+    #     b=100,
+    #     t=100,
+    #     pad=4
+    # ),
+    #paper_bgcolor="LightSteelBlue",
+    )             
+ 
 
     return info_area, info_group, fig_hvs, fig_genes, family, info_hv, fig_hv 
 
