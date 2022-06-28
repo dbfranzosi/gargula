@@ -1,4 +1,5 @@
 import numpy as np
+from copy import deepcopy
 from .genes import Genes
 from .mind.mind import *
 from .visible import Visible
@@ -73,10 +74,8 @@ class Hv:
         #baby.mind = MemoryGraphMind(baby, 1000)
         mother.pregnant += 1
 
-        #print('=== A baby was born!')
-        #self.visualize(show_genes=True)
-        #mother.visualize(show_genes=True)
-        #baby.visualize(show_genes=True)
+        # Primitive version of teaching (copy father's mind)
+        baby.mind = deepcopy(self.mind)
 
         return baby
 

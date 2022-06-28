@@ -37,37 +37,49 @@ app.layout = html.Div([
         dcc.Graph(id='fig_gene')        
     ]),
     html.Div([
-    html.P("Family tree:"),
-    cyto.Cytoscape(
-        id='cytoscape',        
-        layout={'name': 'preset', 'animate': True},        
-        style={'width': '600px', 'height': '500px'},        
-        stylesheet=[            
-            {
-                'selector': 'node',
-                'style': {
-                    'label': 'data(label)'
+        html.P("Family tree:"),
+        cyto.Cytoscape(
+            id='cytoscape',        
+            layout={'name': 'preset', 'animate': True},        
+            style={'width': '600px', 'height': '500px'},        
+            stylesheet=[            
+                {
+                    'selector': 'node',
+                    'style': {
+                        'label': 'data(label)'
+                    }
+                },
+                {
+                    'selector': '[role *= "mother"]',
+                    'style': {
+                        'line-color': 'blue'
+                    }
+                },
+                {
+                    'selector': '[role *= "father"]',
+                    'style': {
+                        'line-color': 'red'
+                    }
                 }
-            },
-            {
-                'selector': '[role *= "mother"]',
-                'style': {
-                    'line-color': 'blue'
-                }
-            },
-            {
-                'selector': '[role *= "father"]',
-                'style': {
-                    'line-color': 'red'
-                }
-            }
-        ]
-    ),
-    dcc.Input(id="input-hv", type="number", placeholder="Id of the hv", debounce=True),
-    html.H4(id='info_hv'),        
-    #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
-    dcc.Graph(id='fig_hv')
-    ])
+            ]
+        )
+    ]),
+    # Individual HV panel
+    html.Div([
+        dcc.Input(id="input-hv", type="number", placeholder="Id of the hv", debounce=True),
+        html.H4(id='info_hv'),        
+        #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
+        dcc.Graph(id='fig_hv')
+    ]),
+    html.Div([
+        dcc.Dropdown(id='dropdown_metrics',
+        options=["energy_pool","food_consumption","power_attack","resistance_attack","reward_eat","reward_rest","reward_sex","reward_violence","feature1"],
+        value='energy_pool'
+        ),
+        #html.H4(id='metrics'),        
+        #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
+        dcc.Graph(id='fig_metrics')
+    ])    
 ])
 
 # Multiple components can update everytime interval gets fired.
@@ -145,7 +157,7 @@ def update_graph_live(n, hv_sel):
     # add list of hv to info
     info_hv = 'This homo-virtualis is not in the group.'
     fig_hv = make_subplots(rows=2, cols=2, 
-                    subplot_titles=["gen values", "", "trait values", "Nr of actions"])     
+                    subplot_titles=["gen values", "trait values", "", "Nr of actions"])     
     
     #print('hv_sel=', hv_sel)  
     if hv_sel in lst_ids:           
@@ -173,13 +185,19 @@ def update_graph_live(n, hv_sel):
     #     pad=4
     # ),
     #paper_bgcolor="LightSteelBlue",
-    )             
- 
+    )  
 
     return info_area, info_group, fig_hvs, fig_genes, family, info_hv, fig_hv 
 
-
-
+@app.callback(
+    Output('fig_metrics', 'figure'),      
+    Input('dropdown_metrics', 'value')
+)
+def update_metrics(value):
+    pd.options.plotting.backend = "plotly"
+    df = gargalo.history.load()[value]
+    fig = df.plot()
+    return fig
 
 if __name__ == '__main__':    
     app.run_server(debug=True)

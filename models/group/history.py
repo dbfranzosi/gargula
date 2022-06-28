@@ -8,7 +8,7 @@ Indicators = namedtuple('Indicators',
 
 class GroupHistory:
 
-    def __init__(self, owner, capacity):
+    def __init__(self, owner, capacity=100):
         self.memory = deque([], maxlen=capacity)
         self.owner = owner
         self.capacity = capacity
@@ -77,6 +77,23 @@ class GroupHistory:
             df_traits.to_csv(f, mode='a', index=False, header=header)
         with open('./data/'+self.owner.name+'_actions.csv', 'a') as f:
             df_actions.to_csv(f, mode='a', index=False, header=header)
+
+    def load(self):
+        #print('load')
+        with open('./data/'+self.owner.name+'_genes.csv', 'r') as f:
+            df_gen = pd.read_csv(f)
+        with open('./data/'+self.owner.name+'_traits.csv', 'r') as f:
+            df_traits = pd.read_csv(f)
+        with open('./data/'+self.owner.name+'_actions.csv', 'r') as f:
+            df_actions = pd.read_csv(f)
+        #print(df_gen.head())
+        df = pd.concat([df_gen, df_traits, df_actions], axis=1)
+        return df
+
+    def read_metric(self, metric):
+        print('read metrics')
+        df = self.load()
+        print(df.head())
         
 
     

@@ -18,7 +18,7 @@ class Group:
         if home:
             home.groups[id] = self
         self.hvs = hvs
-        self.history = GroupHistory(self, 100)
+        self.history = GroupHistory(self, capacity=100)
 
     def nr_hvs(self):
         return len(self.hvs)  
@@ -120,7 +120,7 @@ class Group:
     def load(self):
         pass     
 
-gargalo = Group(name='Gargalo6', home=eden)
+gargalo = Group(name='Gargalo7', home=eden)
 gargalo.generate_gargalo()
 #conception = Group(name='Conception')
 

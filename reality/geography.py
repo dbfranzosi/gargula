@@ -57,8 +57,10 @@ class Area:
             if (self.clock % group.history.capacity == 0):
                 if (int(self.clock / group.history.capacity) == 1):
                     group.history.save(header=True)
+                    #group.history.read_metric("reward_violence")
                 else:
                     group.history.save()
+                    
 
         return True
 
