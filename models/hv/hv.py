@@ -6,6 +6,7 @@ from .visible import Visible
 from .actions import Rest
 from settings import *
 from .history import HvHistory
+import time
 
 id_last = 0
 
@@ -39,10 +40,16 @@ class Hv:
         self.history = HvHistory(self, 200)
 
     def act(self):
+        print('act')
+        print(time.time())
         self.action = self.mind.decide_action()        
+        print(time.time())
         self.action.effects()        
+        print(time.time())
         self.mind.update_memory()  
+        print(time.time())
         self.mind.optimize_mind()           
+        print(time.time())
 
     def aging(self):
         self.age += 1

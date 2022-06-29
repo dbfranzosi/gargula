@@ -7,8 +7,9 @@ def gene_expression(size):
     How genes express to phenotype.
     I choose here a bimodal distribution so each gen either contribute a lot (~1) or very few (~0) to each trait.
     '''
-    sample = np.concatenate((np.random.normal(0., 0.1, int(math.ceil(size/2))),
-                    np.random.normal(1., 0.1, int(math.floor(size/2)))))
+    # sample = np.concatenate((np.random.normal(0., 0.1, int(math.ceil(size/2))),
+    #                 np.random.normal(1., 0.1, int(math.floor(size/2)))))
+    sample = np.random.beta(0.1, 0.1, size)
     np.random.shuffle(sample)
     return sample
 

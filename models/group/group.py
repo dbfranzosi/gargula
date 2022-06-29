@@ -5,6 +5,7 @@ from reality.geography import eden
 import random
 from .history import *
 import pandas as pd
+import time
 
 class Group:
     '''
@@ -42,10 +43,15 @@ class Group:
         hv_keys = list(self.hvs.keys()) # fix to avoid change in the loop        
         random.shuffle(hv_keys) # random initiative            
         for ihv in hv_keys: 
+            print(ihv)
             hv = self.hvs[ihv]
+            print(time.time())
             hv.act()
+            print(time.time())
             hv.aging()
+            print(time.time())
             hv.history.update()
+            print(time.time())
 
     def generate_gargalo(self, nr=10):
         lst_names = ['Adam', 'Eva', 'Lilith', 'Caim', 'Abel', 'Raul', 'Che', 'Karl', 'Lenin', 'José']
@@ -120,7 +126,7 @@ class Group:
     def load(self):
         pass     
 
-gargalo = Group(name='Gargalo7', home=eden)
+gargalo = Group(name='Gargalo9', home=eden)
 gargalo.generate_gargalo()
 #conception = Group(name='Conception')
 

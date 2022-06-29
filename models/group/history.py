@@ -1,6 +1,7 @@
 from settings import *
 from collections import namedtuple, deque
 import pandas as pd
+from os.path import exists
 #import h5py
 
 Indicators = namedtuple('Indicators',
@@ -80,6 +81,9 @@ class GroupHistory:
 
     def load(self):
         #print('load')
+        if not exists('./data/'+self.owner.name+'_genes.csv'):
+            return None
+            
         with open('./data/'+self.owner.name+'_genes.csv', 'r') as f:
             df_gen = pd.read_csv(f)
         with open('./data/'+self.owner.name+'_traits.csv', 'r') as f:

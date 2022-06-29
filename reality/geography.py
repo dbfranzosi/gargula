@@ -50,17 +50,20 @@ class Area:
         for igroup in group_keys:
             group = self.groups[igroup]
             #group.visualize()
+            print(time.time())
             group.check_deaths()
+            print(time.time())
             group.interact()
+            print(time.time())
             group.history.update()
+            print(time.time())
             # Save in csv file
             if (self.clock % group.history.capacity == 0):
                 if (int(self.clock / group.history.capacity) == 1):
-                    group.history.save(header=True)
-                    #group.history.read_metric("reward_violence")
+                    group.history.save(header=True)                    
                 else:
-                    group.history.save()
-                    
+                    group.history.save()      
+            print(time.time())              
 
         return True
 

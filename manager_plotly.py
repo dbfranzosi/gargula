@@ -74,13 +74,41 @@ app.layout = html.Div([
     html.Div([
         dcc.Dropdown(id='dropdown_metrics',
         options=["energy_pool","food_consumption","power_attack","resistance_attack","reward_eat","reward_rest","reward_sex","reward_violence","feature1"],
-        value='energy_pool'
+        #value='energy_pool'
         ),
         #html.H4(id='metrics'),        
         #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
         dcc.Graph(id='fig_metrics')
     ])    
 ])
+
+def get_physical_rep(profile):
+    x = profile.index
+    y = profile['age']
+    size =  profile['energy_pool'] * 10
+    body = [x, y, {'color' : profile['energy']/10, 
+            'size' : size,
+            'symbol' : "pentagon",
+            'opacity' : 0.6,
+            'colorscale' : "Mint",
+            'cmin':0, 'cmax':1 }]
+    head = [x, y+size*0.5, {'color' : profile['reward_sex']/10, 
+            'size' : size/3,
+            'symbol' : "diamond",
+            'opacity' : 1.,
+            'colorscale' : "Hot",
+            'cmin':0, 'cmax':1  } ]
+    legs = [x, y-size*0.8, {'color' : profile['power_attack']/10, 
+            'size' : size/3,
+            'symbol' : "y-up",
+            'opacity' : 1.,
+            'colorscale' : "Sunset",
+            'line':dict(
+                color=profile['power_attack']/10,
+                width=size/10
+            ),
+            'cmin':0, 'cmax':1  } ]
+    return body, head, legs
 
 # Multiple components can update everytime interval gets fired.
 @app.callback(Output('info_area', 'children'),
@@ -94,14 +122,14 @@ app.layout = html.Div([
             Input('input-hv', 'value'))
 def update_graph_live(n, hv_sel): 
     global holder 
-    #print(holder)
+    print(holder)
     if not holder:
         raise PreventUpdate 
     holder = False
-    #before = time.time()
+    before = time.time()
     holder = eden.pass_day()       
-    #after = time.time()    
-    #print('interval=', after - before)    
+    after = time.time()    
+    print('interval=', after - before)    
 
     # Info
     info_area = eden.get_info() 
@@ -109,30 +137,40 @@ def update_graph_live(n, hv_sel):
 
     # hvs        
     profile = gargalo.get_profiles()           
-    profile = profile[profile['energy']>0]          
+    profile = profile[(profile['energy']>0) & (profile['energy_pool']>0)]        
 
-    x = profile.index
-    y = profile['age']
-    colors = profile['power_attack']
-    sz = profile['energy'] * 20 
-    sy = profile['feature1'].astype('int')    
-    text = profile['description']    
+    # x = profile.index
+    # y = profile['age']
+    # # colors = profile['power_attack']
+    # sz = profile['energy'] * 20 
+    # sy = profile['feature1'].astype('int')    
+    # text = profile['description']  
+    body, head, legs = get_physical_rep(profile)
 
     fig_hvs = go.Figure()
     fig_hvs.add_trace(go.Scatter(
-    x=x,
-    y=y,
-    mode="markers+text",
-    #mode="markers",
-    marker=go.scatter.Marker(
-        size=sz,
-        color=colors,
-        opacity=0.6,
-        colorscale="Viridis",
-        symbol=sy
-    ),
-     text=text
+        x=body[0],
+        y=body[1],
+        mode="markers",
+        marker=go.scatter.Marker(**body[2]), showlegend=False
     ))
+    fig_hvs.add_trace(go.Scatter(
+        x=head[0],
+        y=head[1],
+        mode="markers",
+        marker=go.scatter.Marker(**head[2]), showlegend=False
+    ))
+    fig_hvs.add_trace(go.Scatter(
+        x=legs[0],
+        y=legs[1],
+        mode="markers",
+        marker=go.scatter.Marker(**legs[2]), showlegend=False
+    ))
+    fig_hvs.update_yaxes(range=[-50, 300])      
+    fig_hvs.update_layout(    
+        xaxis_title="Id",
+        yaxis_title="Age",          
+    )
 
     # Genetic survey
     data_gene = gargalo.history.get_genes()
@@ -189,15 +227,18 @@ def update_graph_live(n, hv_sel):
 
     return info_area, info_group, fig_hvs, fig_genes, family, info_hv, fig_hv 
 
-@app.callback(
-    Output('fig_metrics', 'figure'),      
-    Input('dropdown_metrics', 'value')
-)
-def update_metrics(value):
-    pd.options.plotting.backend = "plotly"
-    df = gargalo.history.load()[value]
-    fig = df.plot()
-    return fig
+# @app.callback(
+#     Output('fig_metrics', 'figure'),      
+#     Input('dropdown_metrics', 'value')
+# )
+# def update_metrics(value):
+#     df = gargalo.history.load()
+#     if (df == None):
+#         raise PreventUpdate
+
+#     pd.options.plotting.backend = "plotly"    
+#     fig = df.plot(x=value)
+#     return fig
 
 if __name__ == '__main__':    
     app.run_server(debug=True)

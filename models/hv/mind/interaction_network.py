@@ -12,6 +12,8 @@ from torch.utils.data import Dataset, DataLoader
 from ..actions import nr_class_actions
 from settings import *
 
+# Interaction network based on arXiv:1909.12285, 1908.05318
+
 #device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 device = "cpu"
 torch.autograd.set_detect_anomaly(True)
