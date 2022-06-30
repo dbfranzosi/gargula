@@ -15,7 +15,7 @@ class BaseMind:
         self.owner = owner 
         self.group = owner.group  
         self.nr_active_actions = self.group.nr_hvs()*nr_targeted_actions + nr_nontarg_actions
-        self.memory = ReplayMemory(100)
+        self.memory = ReplayMemory()
         
     def decide_action(self, action_nr=nr_actions-1):        
         action_code = lst_actions[action_nr]        
@@ -100,11 +100,16 @@ TARGET_UPDATE = 10
 class GraphMind(MemoryGraphMind):
     def __init__(self, owner, memory_capacity):
         super().__init__(owner, memory_capacity)
+        print("mind1")
         self.policy_net = InteractionNetwork(n_objects, object_dim, n_relations, effect_dim, nr_class_actions).to(device)
         self.target_net = InteractionNetwork(n_objects, object_dim, n_relations, effect_dim, nr_class_actions).to(device)
+        print("mind2")
         self.target_net.load_state_dict(self.policy_net.state_dict())
+        print("mind3")
         self.target_net.eval()
+        print("mind4")
         self.optimizer = optim.RMSprop(self.policy_net.parameters())        
+        print("mind5")
 
     def decide_action(self):                
         self.state = torch.tensor(perception(self.group), device=device, dtype=torch.float)         

@@ -1,18 +1,27 @@
 import numpy as np
-from copy import deepcopy
+import copy
 from .genes import Genes
 from .mind.mind import *
 from .visible import Visible
 from .actions import Rest
 from settings import *
 from .history import HvHistory
+import pickle
 import time
+
 
 id_last = 0
 
 class Hv:
         
-    def __init__(self, group=None, haploid_father=None, haploid_mother=None, energy = 0.0, generation=1, name=''):
+    def __init__(self, group=None, haploid_father=None, haploid_mother=None, energy = 0.0, generation=1, name='', fromfile=None):
+
+        # if (fromfile is not None):
+        #     with open(fromfile, 'rb') as f:
+        #         self = pickle.load(f)
+        #         self.id += id_last
+
+
 
         global id_last
         self.id = id_last
@@ -35,8 +44,9 @@ class Hv:
         #self.mind = PonderMind(self, group)         
         #self.mind = MemoryGraphMind(self, 1000)
         #self.mind = GraphMind(self, 1000)
-        self.mind = GraphDQLMind(self, 1000)
-
+        print("Mind!!")
+        self.mind = GraphDQLMind(self, memory_capacity=100)
+        print("History!!")
         self.history = HvHistory(self, 200)
 
     def act(self):
@@ -70,19 +80,26 @@ class Hv:
             del self.group.hvs[self.id]                                    
 
     def make_baby(self, mother):
+        print("make baby")
         haploid_father = self.genes.meiosis()
         haploid_mother = mother.genes.meiosis()
         #generation = max(self.generation, mother.generation) + 1
         generation = max(self.generation, mother.generation) + 1 
         baby_name = f'{mother.name.split()[0]} {generation}'
+        print("create baby")
+        print(self.get_info())
+        print(mother.get_info())
+        print(self.group.nr_hvs())
         baby = Hv(group=self.group, name=baby_name, haploid_father=haploid_father, 
                 haploid_mother=haploid_mother, energy=5*UNIT_ENERGY, generation=generation) 
+        print("created baby")
         baby.parents = [self.id, mother.id]
         #baby.mind = MemoryGraphMind(baby, 1000)
         mother.pregnant += 1
 
         # Primitive version of teaching (copy father's mind)
-        baby.mind = deepcopy(self.mind)
+        print("Copy mind.")
+        baby.mind = copy.copy(self.mind)
 
         return baby
 
@@ -97,10 +114,15 @@ class Hv:
             str += f'\n{self.visible.features}\n'    
         return str
         
-        
     def get_genes(self):
         return self.genes.sequence[0]+self.genes.sequence[1]
 
+    def save(self):
+        filename = self.group.name + 'hv{self.id}'
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+    
         
 
     

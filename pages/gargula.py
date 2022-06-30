@@ -8,7 +8,7 @@ import pandas as pd
 
 ''' Frontend '''
 import dash
-from dash import dcc, html
+from dash import dcc, html, callback
 from dash.dependencies import Input, Output
 from dash.exceptions import PreventUpdate
 import plotly
@@ -18,12 +18,12 @@ import numpy as np
 import dash_cytoscape as cyto
 import time
 
+dash.register_page(__name__)
+
 holder = True
 visualize_settings()
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-app.layout = html.Div([
+layout = html.Div([
     html.Div([
         dcc.Interval(
             id='interval-component',
@@ -46,7 +46,8 @@ app.layout = html.Div([
                 {
                     'selector': 'node',
                     'style': {
-                        'label': 'data(label)'
+                        'label': 'data(label)',
+                        'color': 'white'
                     }
                 },
                 {
@@ -111,7 +112,7 @@ def get_physical_rep(profile):
     return body, head, legs
 
 # Multiple components can update everytime interval gets fired.
-@app.callback(Output('info_area', 'children'),
+@callback(Output('info_area', 'children'),
             Output('info_group', 'children'),
             Output('fig_hvs', 'figure'),
             Output('fig_gene', 'figure'),
@@ -227,7 +228,7 @@ def update_graph_live(n, hv_sel):
 
     return info_area, info_group, fig_hvs, fig_genes, family, info_hv, fig_hv 
 
-# @app.callback(
+# @callback(
 #     Output('fig_metrics', 'figure'),      
 #     Input('dropdown_metrics', 'value')
 # )
@@ -240,6 +241,6 @@ def update_graph_live(n, hv_sel):
 #     fig = df.plot(x=value)
 #     return fig
 
-if __name__ == '__main__':    
-    app.run_server(debug=True)
+# if __name__ == '__main__':    
+#     app.run_server(debug=True)
 

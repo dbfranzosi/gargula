@@ -90,7 +90,8 @@ class TrySex(TargetedAction):
 
         conditions = (target.pregnant == 0 and owner.pregnant == 0)
         conditions = conditions and (owner != target)
-        conditions = conditions and target.mind.decide_passive("accept_sex", owner)        
+        conditions = conditions and target.mind.decide_passive("accept_sex", owner)  
+        conditions = conditions and (owner.group.nr_hvs() < MAX_HVS_IN_GROUP)      
 
         super().__init__(owner, target, conditions=conditions, energy_cost_success = 5.0*UNIT_ENERGY, 
                 energy_cost_fail = 1.0*UNIT_ENERGY)  

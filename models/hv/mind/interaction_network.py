@@ -14,8 +14,8 @@ from settings import *
 
 # Interaction network based on arXiv:1909.12285, 1908.05318
 
-#device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-device = "cpu"
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#device = "cpu"
 torch.autograd.set_detect_anomaly(True)
 
 n_objects  =  MAX_HVS_IN_GROUP # number of hvs (nodes)
