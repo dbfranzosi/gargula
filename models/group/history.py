@@ -72,23 +72,23 @@ class GroupHistory:
     def save(self, header=False): 
         df_gen, df_traits, df_actions = self.to_df()
 
-        with open('./data/'+self.owner.name+'_genes.csv', 'a') as f:
+        with open('./data/history/'+self.owner.name+'_genes.csv', 'a') as f:
             df_gen.to_csv(f, mode='a', index=False, header=header)
-        with open('./data/'+self.owner.name+'_traits.csv', 'a') as f:
+        with open('./data/history/'+self.owner.name+'_traits.csv', 'a') as f:
             df_traits.to_csv(f, mode='a', index=False, header=header)
-        with open('./data/'+self.owner.name+'_actions.csv', 'a') as f:
+        with open('./data/history/'+self.owner.name+'_actions.csv', 'a') as f:
             df_actions.to_csv(f, mode='a', index=False, header=header)
 
     def load(self):
         #print('load')
-        if not exists('./data/'+self.owner.name+'_genes.csv'):
+        if not exists('./data/history/'+self.owner.name+'_genes.csv'):
             return None
-            
-        with open('./data/'+self.owner.name+'_genes.csv', 'r') as f:
+
+        with open('./data/history/'+self.owner.name+'_genes.csv', 'r') as f:
             df_gen = pd.read_csv(f)
-        with open('./data/'+self.owner.name+'_traits.csv', 'r') as f:
+        with open('./data/history/'+self.owner.name+'_traits.csv', 'r') as f:
             df_traits = pd.read_csv(f)
-        with open('./data/'+self.owner.name+'_actions.csv', 'r') as f:
+        with open('./data/history/'+self.owner.name+'_actions.csv', 'r') as f:
             df_actions = pd.read_csv(f)
         #print(df_gen.head())
         df = pd.concat([df_gen, df_traits, df_actions], axis=1)

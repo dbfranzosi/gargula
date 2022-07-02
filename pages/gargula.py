@@ -9,21 +9,69 @@ import pandas as pd
 ''' Frontend '''
 import dash
 from dash import dcc, html, callback
-from dash.dependencies import Input, Output
+from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
+import dash_bootstrap_components as dbc
 import plotly
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 import dash_cytoscape as cyto
+from os import listdir
 import time
 
 dash.register_page(__name__)
 
-holder = True
+releaser = True
+releaser_ext = False
+
+passing_turn = False
+simulating = False
+saving = False
+
 visualize_settings()
 
+lst_groups = listdir('./data/groups/')
+lst_groups = [name.split('.')[0] for name in lst_groups]
+print(lst_groups)
+lst_bios = listdir('./data/biologies/')
+lst_bios = [name.split('.')[0] for name in lst_bios]
+lst_bios.append('New')
+print(lst_bios)
+
 layout = html.Div([
+    html.H4("Load groups"),
+    dbc.Row([
+        dbc.Col(dcc.Checklist(lst_groups, id="load_group-list", inline=True), className="me-3",),
+        dbc.Col(dbc.Button(id="load_group-buttom", children="Load groups", color="primary"), width="auto"),
+    ]),
+    html.Div(id='info_loadgroup'), 
+    html.H4("Create group"),
+    dbc.Form(
+    dbc.Row(
+        [
+            dbc.Label("Group's name", width="auto"),
+            dbc.Col(
+                dbc.Input(id="namegroup-input", type="text", placeholder="Enter group's name"),
+                className="me-3",
+            ),
+            dbc.Label("Number of homo-virtualis", width="auto"),
+            dbc.Col(
+                dbc.Input(id="nrhv-input", type="number", min=1, max=25, placeholder=10),
+                className="me-3",
+            ),            
+            dbc.Label("Biology", width="auto"),
+            dbc.Col(
+                dcc.Dropdown(lst_bios, 'New', id='bios-dropdown'),                
+                className="me-3",
+            ),
+            dbc.Col(dbc.Button(id="create_group-buttom", children="Create group", color="primary"), width="auto"),
+        ],
+        className="g-2",
+    )    ),    
+    html.Div(id='info_creategroup'),         
+    html.Div([dbc.Button(id='sim-button', children="Run Simulation", n_clicks=0),], 
+                className="d-grid gap-2", style={"margin-top": "15px"}),    
     html.Div([
         dcc.Interval(
             id='interval-component',
@@ -31,8 +79,10 @@ layout = html.Div([
             n_intervals=0
         ),
         # Constantly updated
-        html.H4(id='info_area'),        
-        html.H4(id='info_group'),         
+        html.Div(id='info_area'),        
+        html.Div(id='info_group'),         
+        html.Div([dbc.Button(id='savegroup-button', children="Save Group", n_clicks=0),], 
+                className="d-grid gap-2", style={"margin-top": "15px"}),        
         dcc.Graph(id='fig_hvs'),                
         dcc.Graph(id='fig_gene')        
     ]),
@@ -72,16 +122,78 @@ layout = html.Div([
         #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
         dcc.Graph(id='fig_hv')
     ]),
-    html.Div([
-        dcc.Dropdown(id='dropdown_metrics',
-        options=["energy_pool","food_consumption","power_attack","resistance_attack","reward_eat","reward_rest","reward_sex","reward_violence","feature1"],
-        #value='energy_pool'
-        ),
-        #html.H4(id='metrics'),        
-        #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
-        dcc.Graph(id='fig_metrics')
-    ])    
 ])
+
+
+@callback(Output('info_loadgroup', 'children'),
+        Input('load_group-buttom', 'n_clicks'),
+        State('load_group-list', 'value'),
+        )
+def load_group(n, group_list):     
+    global gargalo
+    
+    if (len(group_list) == 0 ):
+        print("Choose a group to load.")
+        PreventUpdate
+    elif (len(group_list) == 1):        
+        group_name = group_list[0]
+        print('Loading '+ group_name)
+        #gargalo.load(group_name)
+        gargalo = gargalo.load(group_name)
+        filename = f'./data/biologies/bio_{group_name}.pickle'
+        biology.load(filename)
+    else:
+        print("Combining different groups into one. Not implemented yet.")
+    
+    # Info    
+    info_group = 'Loaded '+gargalo.get_info()
+    return info_group
+
+
+@callback(Output('info_creategroup', 'children'),
+        Input('create_group-buttom', 'n_clicks'),
+        State('namegroup-input', 'value'),
+        State('nrhv-input', 'value'),
+        State('bios-dropdown', 'value'),        
+        )
+def create_group(n, name, nr, bio): 
+    if (bio != "New"):
+        filename = f'./data/biologies/{bio}.pickle'
+        biology.load(filename)
+    gargalo.name = name
+    gargalo.generate_gargalo(nr)
+
+    # Info    
+    info_group = 'Created '+gargalo.get_info()
+    return info_group
+
+
+@callback(Output('sim-button', 'color'),
+        Output('sim-button', 'children'),            
+        Input('sim-button', 'n_clicks'),
+        )
+def control_sim(n): 
+    global simulating
+    if (n % 2 == 0):
+        print("test")
+        simulating = False
+        return "primary", "Run Simulation"
+    else:
+        simulating = True
+        return "danger", "Stop Simulation"
+
+@callback(Output('savegroup-button', 'color'),
+        Output('savegroup-button', 'children'),            
+        Input('savegroup-button', 'n_clicks'),
+        )
+def save_group(n): 
+    global simulating, passing_turn, saving
+    if (simulating or passing_turn):
+        raise PreventUpdate    
+    saving = True
+    gargalo.save()    
+    saving = False
+    # move to long_callback
 
 def get_physical_rep(profile):
     x = profile.index
@@ -117,18 +229,15 @@ def get_physical_rep(profile):
             Output('fig_hvs', 'figure'),
             Output('fig_gene', 'figure'),
             Output('cytoscape', 'elements'), 
-            Output('info_hv', 'children'), 
-            Output('fig_hv', 'figure'),             
-            Input('interval-component', 'n_intervals'),
-            Input('input-hv', 'value'))
-def update_graph_live(n, hv_sel): 
-    global holder 
-    print(holder)
-    if not holder:
+            Input('interval-component', 'n_intervals'))
+def update_graph_live(n): 
+    global simulating, passing_turn, saving    
+    holder = (not simulating) or saving or passing_turn
+    if holder:
         raise PreventUpdate 
-    holder = False
+    passing_turn = True
     before = time.time()
-    holder = eden.pass_day()       
+    passing_turn = not eden.pass_day()       
     after = time.time()    
     print('interval=', after - before)    
 
@@ -140,12 +249,6 @@ def update_graph_live(n, hv_sel):
     profile = gargalo.get_profiles()           
     profile = profile[(profile['energy']>0) & (profile['energy_pool']>0)]        
 
-    # x = profile.index
-    # y = profile['age']
-    # # colors = profile['power_attack']
-    # sz = profile['energy'] * 20 
-    # sy = profile['feature1'].astype('int')    
-    # text = profile['description']  
     body, head, legs = get_physical_rep(profile)
 
     fig_hvs = go.Figure()
@@ -191,7 +294,13 @@ def update_graph_live(n, hv_sel):
     # family
     family = gargalo.get_family()   
 
-    # Hv panel
+    return info_area, info_group, fig_hvs, fig_genes, family
+
+@callback(  Output('info_hv', 'children'), 
+            Output('fig_hv', 'figure'),                       
+            Input('input-hv', 'value'))
+def update_hv_panel(hv_sel):     
+    
     lst_ids = gargalo.get_list_ids()   
     # add list of hv to info
     info_hv = 'This homo-virtualis is not in the group.'
@@ -204,7 +313,10 @@ def update_graph_live(n, hv_sel):
         info_hv = hv.get_info(show_genes=False, show_action=True, show_visible=False)        
         genes = hv.get_genes()
         traits = hv.genes.phenotype.traits
-        y_actions = hv.history.get_indicators()
+        if (hv.history.__len__() == 0):
+            y_actions = {action : 0.0 for action in ACTIONS}
+        else:
+            y_actions = hv.history.get_indicators()
         #print('y_actions=', y_actions)
         
         fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
@@ -226,21 +338,4 @@ def update_graph_live(n, hv_sel):
     #paper_bgcolor="LightSteelBlue",
     )  
 
-    return info_area, info_group, fig_hvs, fig_genes, family, info_hv, fig_hv 
-
-# @callback(
-#     Output('fig_metrics', 'figure'),      
-#     Input('dropdown_metrics', 'value')
-# )
-# def update_metrics(value):
-#     df = gargalo.history.load()
-#     if (df == None):
-#         raise PreventUpdate
-
-#     pd.options.plotting.backend = "plotly"    
-#     fig = df.plot(x=value)
-#     return fig
-
-# if __name__ == '__main__':    
-#     app.run_server(debug=True)
-
+    return info_hv, fig_hv 

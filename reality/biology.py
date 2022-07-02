@@ -1,5 +1,6 @@
 import numpy as np
 import math
+import pickle
 from settings import *
 
 def gene_expression(size):
@@ -24,29 +25,19 @@ class Genetics:
         for trait in TRAITS:
             self.w[trait] = gene_expression(GEN_SIZE)            
 
-        # # metabolism                
-        # self.w['energy_pool'] = gene_expression(GEN_SIZE)        
-        # self.w['food_consumption'] = gene_expression(GEN_SIZE)
-        
-        # # action and resistance power
-        # self.w['power_attack'] = gene_expression(GEN_SIZE)        
-        # self.w['resistance_attack'] = gene_expression(GEN_SIZE)        
-
-        # # mind reward
-        # self.w['reward_eat'] = gene_expression(GEN_SIZE)        
-        # self.w['reward_rest'] = gene_expression(GEN_SIZE)        
-        # self.w['reward_sex'] = gene_expression(GEN_SIZE)        
-        # self.w['reward_violence'] = gene_expression(GEN_SIZE)
-
-        # # appearence
-        # self.w['feature1'] = gene_expression(GEN_SIZE)        
-
 class Biology:
 
     def __init__(self, genetics = Genetics(), gestationtime=90):            
         self.gestationtime = gestationtime        
         self.genetics = genetics
         self.meiosis_variation = 0.1 # mean value of Poisson distribution for nr of genes suffering mutation
+
+    def get_info(self):
+        return f'gestation time: {self.gestationtime} \n genetics: {self.genetics.w} \n meiosis_variation: {self.meiosis_variation}'  
+            
+    def load(self, filename):
+        with open(filename, 'rb') as f:
+            self = pickle.load(f)              
 
 biology = Biology()
 

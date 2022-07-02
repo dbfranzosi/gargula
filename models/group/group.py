@@ -5,6 +5,7 @@ from reality.geography import eden
 import random
 from .history import *
 import pandas as pd
+import pickle
 import time
 
 class Group:
@@ -30,7 +31,7 @@ class Group:
     def extinction(self):
         if (self.nr_hvs() <= 0):
             print('A group was extinct.')
-            self.visualize()
+            print(self.get_info())
             del self.home.groups[self.id]
 
     def check_deaths(self):
@@ -42,16 +43,11 @@ class Group:
     def interact(self):
         hv_keys = list(self.hvs.keys()) # fix to avoid change in the loop        
         random.shuffle(hv_keys) # random initiative            
-        for ihv in hv_keys: 
-            print(ihv)
-            hv = self.hvs[ihv]
-            print(time.time())
+        for ihv in hv_keys:             
+            hv = self.hvs[ihv]            
             hv.act()
-            print(time.time())
             hv.aging()
-            print(time.time())
             hv.history.update()
-            print(time.time())
 
     def generate_gargalo(self, nr=10):
         lst_names = ['Adam', 'Eva', 'Lilith', 'Caim', 'Abel', 'Raul', 'Che', 'Karl', 'Lenin', 'José']
@@ -122,13 +118,26 @@ class Group:
         return family
 
     def save(self):
-        pass
-    def load(self):
-        pass     
+        filename = f'./data/groups/{self.name}.pickle'
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+        # save also the biology of the group
+        filename = f'./data/biologies/bio_{self.name}.pickle'
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
-gargalo = Group(name='Gargalo9', home=eden)
-gargalo.generate_gargalo()
-#conception = Group(name='Conception')
+    def load(self, name):
+        filename = f'./data/groups/{name}.pickle'
+        with open(filename, 'rb') as f:
+            self = pickle.load(f)     
+        print(self.name)
+        print(self.get_info())
+        print(self.nr_hvs())
+        return self
+
+gargalo = Group(name='Gargalo', home=eden)
+# gargalo.generate_gargalo()
+# conception = Group(name='Conception')
 
 
 

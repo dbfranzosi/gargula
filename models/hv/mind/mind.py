@@ -100,16 +100,11 @@ TARGET_UPDATE = 10
 class GraphMind(MemoryGraphMind):
     def __init__(self, owner, memory_capacity):
         super().__init__(owner, memory_capacity)
-        print("mind1")
         self.policy_net = InteractionNetwork(n_objects, object_dim, n_relations, effect_dim, nr_class_actions).to(device)
         self.target_net = InteractionNetwork(n_objects, object_dim, n_relations, effect_dim, nr_class_actions).to(device)
-        print("mind2")
         self.target_net.load_state_dict(self.policy_net.state_dict())
-        print("mind3")
         self.target_net.eval()
-        print("mind4")
         self.optimizer = optim.RMSprop(self.policy_net.parameters())        
-        print("mind5")
 
     def decide_action(self):                
         self.state = torch.tensor(perception(self.group), device=device, dtype=torch.float)         
@@ -117,7 +112,6 @@ class GraphMind(MemoryGraphMind):
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
             math.exp(-1. * self.owner.age / EPS_DECAY)        
         if sample > eps_threshold:            
-            print('exploitation')
             with torch.no_grad():
                 # t.max(1) will return largest column value of each row.
                 # second column on max result is index of where max element was
@@ -131,15 +125,12 @@ class GraphMind(MemoryGraphMind):
                 target_nr, action_nr = divmod(int(self.action), nr_class_actions) 
                 action_code = [ACTIONS[action_nr], target_nr]                
                 action = get_action(action_code, self.owner)   
-                print('action=', self.action, action)               
         else:
-            print('exploration')
             nr_hvs = self.group.nr_hvs()
             target_nr, action_nr = random.randrange(0, nr_hvs), random.randrange(0, nr_class_actions)
             self.action = torch.tensor([target_nr*nr_class_actions + action_nr], device=device, dtype=torch.int64)
             action_code = [ACTIONS[action_nr], target_nr]            
             action = get_action(action_code, self.owner)    
-            print('action=', self.action, action)                         
         self.reward = torch.tensor([action.reward], device=device, dtype=torch.float) 
         return action
 
@@ -173,14 +164,14 @@ class GraphDQLMind(GraphMind):
         
         predicted = self.policy_net(state_batch, RS, RR)        
 
-        print('pred=', predicted)
-        print('pview=', predicted.view(BATCH_SIZE, -1))
-        print(action_batch)
+        # print('pred=', predicted)
+        # print('pview=', predicted.view(BATCH_SIZE, -1))
+        # print(action_batch)
 
         # Flatten O[Do, Np] to pick the action (one-index)
         state_action_values = predicted.view(BATCH_SIZE, -1).gather(1, action_batch)
         
-        print('sact=', state_action_values)
+        # print('sact=', state_action_values)
         # print('===============')
         
         # Compute V(s_{t+1}) for all next states.
@@ -194,11 +185,11 @@ class GraphDQLMind(GraphMind):
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
 
-        print(state_batch.size(), ' ', RS.size(), ' ', RR.size())
-        print('predicted=', predicted)
-        print('state=', state_action_values)
-        print('expected=', expected_state_action_values)
-        print('reward=', reward_batch)
+        # print(state_batch.size(), ' ', RS.size(), ' ', RR.size())
+        # print('predicted=', predicted)
+        # print('state=', state_action_values)
+        # print('expected=', expected_state_action_values)
+        # print('reward=', reward_batch)
         # # Compute Huber loss
         criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values)

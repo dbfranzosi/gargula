@@ -60,3 +60,44 @@ with h5py.File('./data/'+filename, 'a') as hf:
 #     #     fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=1)     
     
 #     return fig_hv, lst_ids  
+
+
+        if (fromfile is not None):
+            # ignore all arguments but group
+            with open(fromfile, 'rb') as f:
+                self = pickle.load(f)
+
+            self.id = id_last
+            id_last += 1
+            self.group = group
+            group.hvs[self.id] = self          
+            self.genes = Genes(haploid_father,haploid_mother)         
+            self.parents = None
+            self.visible = Visible(self)                
+            self.action = Rest(self) 
+
+        else:
+            self.id = id_last
+            id_last += 1
+            self.group = group
+            group.hvs[self.id] = self          
+            self.genes = Genes(haploid_father,haploid_mother)         
+            self.pregnant=0 
+            self.age=0    
+            self.generation = generation             
+            if energy==0.0:
+                self.energy = self.genes.phenotype.traits['energy_pool']
+            else:
+                self.energy = energy
+            self.name = name
+            self.parents = None
+            self.visible = Visible(self)                
+            self.action = Rest(self) 
+
+            self.mind = GraphDQLMind(self, memory_capacity=100)
+            self.history = HvHistory(self, 200)
+
+    def save(self, filename='hv.pickle'):
+        #filename = self.group.name + 'hv{self.id}.pickle'
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
