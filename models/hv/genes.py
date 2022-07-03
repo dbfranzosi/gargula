@@ -1,21 +1,22 @@
 from settings import *
 import numpy as np
-from reality.biology import biology
+#from reality.biology import biology
 from scipy.stats import poisson
 
-genetics = biology.genetics
+#genetics = biology.genetics
 
 class Genes:
     '''
     Class for dealing with genes.
     '''    
 
-    def __init__(self, haploid_father, haploid_mother):
+    def __init__(self, biology, haploid_father, haploid_mother):
+        self.biology = biology
         self.sequence = [haploid_father, haploid_mother]        
-        self.phenotype = Phenotype(self.sequence)
+        self.phenotype = Phenotype(biology.genetics, self.sequence)
         
     def meiosis(self):
-        variation = poisson.rvs(biology.meiosis_variation, size=1)[0]        
+        variation = poisson.rvs(self.biology.meiosis_variation, size=1)[0]        
         a = np.random.randint(0,2,size=GEN_SIZE)
         haploid = np.array([self.sequence[a[i]][i] for i in range(len(a))] )
         if variation > 0:
@@ -33,7 +34,7 @@ class Phenotype:
     In principle it could be simply a dictionary, 
     but let's keep it as a class in case we want to make it more general.
     '''
-    def __init__(self, sequence):
+    def __init__(self, genetics, sequence):
         
         # energetics/metabolism 
         expression = [a*b for a,b in zip(sequence[0],sequence[1])]

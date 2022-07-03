@@ -8,7 +8,7 @@ import pandas as pd
 
 ''' Frontend '''
 import dash
-from dash import dcc, html, callback
+from dash import dcc, html, callback, ctx
 from dash.dependencies import Input, Output, State
 from dash.exceptions import PreventUpdate
 import dash_bootstrap_components as dbc
@@ -38,8 +38,76 @@ lst_bios = listdir('./data/biologies/')
 lst_bios = [name.split('.')[0] for name in lst_bios]
 lst_bios.append('New')
 print(lst_bios)
+lst_areas = listdir('./data/areas/')
+lst_areas = [name.split('.')[0] for name in lst_areas]
+
+cards = dbc.CardGroup(
+    [
+        dbc.Card(
+            dbc.CardBody(
+                [
+                    html.H5("Biology", className="card-title"),
+                    dbc.Input(id="name_biology-input", type="text", placeholder="homo-virtualis", debounce=True),
+                    html.P(id="biology_info_init",
+                        className="card-text",
+                    ),
+                ]
+            )
+        ),
+        dbc.Card(
+            dbc.CardBody(
+                [
+                    html.H5("Area", className="card-title"),
+                    dbc.Input(id="name_area-input", type="text", placeholder="Eden", debounce=True),
+                    html.P(id="area_info_init",
+                        className="card-text",
+                    ),
+                ]
+            )
+        ),
+        dbc.Card(
+            dbc.CardBody(
+                [
+                    html.H5("Group", className="card-title"),
+                    dbc.Input(id="name_group-input", type="text", placeholder="Gargalo", debounce=True),
+                    html.P(id="group_info_init",
+                        className="card-text",
+                    ),
+                ]
+            )
+        ),
+    ]
+)
+
+accordion = html.Div(
+    dbc.Accordion(
+        [
+            dbc.AccordionItem(
+                [
+                    html.P("This is the content of the first section"),
+                    dbc.Button("Click here"),
+                ],
+                title="Load biology",
+            ),
+            dbc.AccordionItem(
+                [
+                    html.P("This is the content of the second section"),
+                    dbc.Button("Don't click me!", color="danger"),
+                ],
+                title="Load area",
+            ),
+            dbc.AccordionItem(
+                "This is the content of the third section",
+                title="Load group",
+            ),
+        ],
+        start_collapsed=True,
+    )
+)
+
 
 layout = html.Div([
+    cards,
     html.H4("Load groups"),
     dbc.Row([
         dbc.Col(dcc.Checklist(lst_groups, id="load_group-list", inline=True), className="me-3",),
@@ -48,13 +116,7 @@ layout = html.Div([
     html.Div(id='info_loadgroup'), 
     html.H4("Create group"),
     dbc.Form(
-    dbc.Row(
-        [
-            dbc.Label("Group's name", width="auto"),
-            dbc.Col(
-                dbc.Input(id="namegroup-input", type="text", placeholder="Enter group's name"),
-                className="me-3",
-            ),
+    dbc.Row([            
             dbc.Label("Number of homo-virtualis", width="auto"),
             dbc.Col(
                 dbc.Input(id="nrhv-input", type="number", min=1, max=25, placeholder=10),
@@ -124,49 +186,65 @@ layout = html.Div([
     ]),
 ])
 
-
-@callback(Output('info_loadgroup', 'children'),
-        Input('load_group-buttom', 'n_clicks'),
-        State('load_group-list', 'value'),
-        )
-def load_group(n, group_list):     
-    global gargalo
-    
-    if (len(group_list) == 0 ):
-        print("Choose a group to load.")
-        PreventUpdate
-    elif (len(group_list) == 1):        
-        group_name = group_list[0]
-        print('Loading '+ group_name)
-        #gargalo.load(group_name)
-        gargalo = gargalo.load(group_name)
-        filename = f'./data/biologies/bio_{group_name}.pickle'
-        biology.load(filename)
-    else:
-        print("Combining different groups into one. Not implemented yet.")
-    
-    # Info    
-    info_group = 'Loaded '+gargalo.get_info()
-    return info_group
-
-
-@callback(Output('info_creategroup', 'children'),
+@callback(
+        Output('biology_info_init', 'children'),
+        Output('area_info_init', 'children'),
+        Output('group_info_init', 'children'),
+        Input('name_biology-input', 'value'),
+        Input('name_area-input', 'value'),
+        Input('name_group-input', 'value'),
+        Input('load_group-buttom', 'n_clicks'),                
         Input('create_group-buttom', 'n_clicks'),
-        State('namegroup-input', 'value'),
-        State('nrhv-input', 'value'),
-        State('bios-dropdown', 'value'),        
+        State('load_group-list', 'value'),        
+        State('nrhv-input', 'value'),        
         )
-def create_group(n, name, nr, bio): 
-    if (bio != "New"):
-        filename = f'./data/biologies/{bio}.pickle'
-        biology.load(filename)
-    gargalo.name = name
-    gargalo.generate_gargalo(nr)
+def initialization(name_biology, name_area, name_group, n_load, n_create, group_list, nrhv):
+    global gargalo, biology, eden
+    global simulating, saving, passing_turn
 
-    # Info    
-    info_group = 'Created '+gargalo.get_info()
-    return info_group
+    if (simulating or saving or passing_turn):
+        PreventUpdate
 
+    info_biology = ''
+    info_area = ''
+    info_group = ''
+
+    trigger = ctx.triggered_id
+
+    if (trigger == 'name_biology-input'):
+        biology.name = name_biology
+        if (name_biology in lst_bios):
+            info_biology += '\n Warning: this biology exists and will be overwritten.'
+    elif (trigger == 'name_area-input'):
+        eden.name = name_area
+        if (name_area in lst_areas):
+            info_area += '\n Warning: this area exists and will be overwritten.'
+    elif (trigger == 'name_group-input'):
+        gargalo.name = name_group
+        if (name_group in lst_groups):
+            info_group += '\n Warning: this group exists and will be overwritten.'
+    elif(trigger == 'load_group-buttom'):
+        # Load group
+        if (len(group_list) == 0 ):
+            #group_info_init = "Choose a group to load or create a new group."
+            pass
+        elif (len(group_list) == 1):        
+            group_name = group_list[0]        
+            gargalo = gargalo.load(group_name)
+            biology = gargalo.biology
+            eden = gargalo.home                
+        else:
+            #"Combining different groups into one. Not implemented yet."
+            pass
+    elif (trigger == 'create_group-buttom'):
+        gargalo.name = name
+        gargalo.generate_gargalo(nr)
+
+    info_biology += biology.get_info()    
+    info_area += eden.get_info() 
+    info_group += gargalo.get_info()    
+
+    return info_biology, info_area, info_group
 
 @callback(Output('sim-button', 'color'),
         Output('sim-button', 'children'),            
@@ -188,7 +266,7 @@ def control_sim(n):
         )
 def save_group(n): 
     global simulating, passing_turn, saving
-    if (simulating or passing_turn):
+    if (simulating or passing_turn or n==0):
         raise PreventUpdate    
     saving = True
     gargalo.save()    

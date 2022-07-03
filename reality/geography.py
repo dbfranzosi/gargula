@@ -28,7 +28,7 @@ class Area:
     def get_info(self, show_food=True):
         str = f'Area {self.name} at day {self.clock}.'
         if show_food:
-            str += f' Food: {self.food:.2f}.'        
+            str += f' Food: {self.food:.2f}. Food production: {self.food_generation:.2f}'        
         return str
 
     def check_extinctions(self):
@@ -61,6 +61,11 @@ class Area:
                     group.history.save()      
 
         return True
+    
+    def load(self, filename):
+        with open(filename, 'rb') as f:
+            self = pickle.load(f)   
+        return self
 
 eden = Area(name='Eden')
 

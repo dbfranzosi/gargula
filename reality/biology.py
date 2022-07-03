@@ -27,17 +27,20 @@ class Genetics:
 
 class Biology:
 
-    def __init__(self, genetics = Genetics(), gestationtime=90):            
+    def __init__(self, genetics = Genetics(), gestationtime=90, name='homo-virtualis'):            
         self.gestationtime = gestationtime        
         self.genetics = genetics
         self.meiosis_variation = 0.1 # mean value of Poisson distribution for nr of genes suffering mutation
+        self.name = name
 
     def get_info(self):
-        return f'gestation time: {self.gestationtime} \n genetics: {self.genetics.w} \n meiosis_variation: {self.meiosis_variation}'  
+        #return f'gestation time: {self.gestationtime} \n genetics: {self.genetics.w} \n meiosis_variation: {self.meiosis_variation}'  
+        return f'The species is characterized by a genetics, gestation time: {self.gestationtime}, meiosis_variation: {self.meiosis_variation}'  
             
     def load(self, filename):
         with open(filename, 'rb') as f:
-            self = pickle.load(f)              
+            self = pickle.load(f)      
+        return self        
 
 biology = Biology()
 

@@ -1,6 +1,7 @@
 from settings import *
 import numpy as np
 from models.hv.hv import Hv
+from reality.biology import biology
 from reality.geography import eden
 import random
 from .history import *
@@ -20,6 +21,7 @@ class Group:
         if home:
             home.groups[id] = self
         self.hvs = hvs
+        self.biology = biology
         self.history = GroupHistory(self, capacity=100)
 
     def nr_hvs(self):
@@ -121,18 +123,21 @@ class Group:
         filename = f'./data/groups/{self.name}.pickle'
         with open(filename, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-        # save also the biology of the group
-        filename = f'./data/biologies/bio_{self.name}.pickle'
-        with open(filename, 'wb') as f:
-            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+        # # save also the biology and the area of the group
+        # filename = f'./data/biologies/bio_{self.biology.name}.pickle'
+        # with open(filename, 'wb') as f:
+        #     pickle.dump(self.biology, f, pickle.HIGHEST_PROTOCOL)
+        # filename = f'./data/areas/{self.home.name}.pickle'
+        # with open(filename, 'wb') as f:
+        #     pickle.dump(self.home, f, pickle.HIGHEST_PROTOCOL)
 
     def load(self, name):
         filename = f'./data/groups/{name}.pickle'
         with open(filename, 'rb') as f:
             self = pickle.load(f)     
         print(self.name)
-        print(self.get_info())
-        print(self.nr_hvs())
+        print(self.get_info())      
+        print(self.home.clock)
         return self
 
 gargalo = Group(name='Gargalo', home=eden)

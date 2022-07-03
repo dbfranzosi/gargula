@@ -101,3 +101,46 @@ with h5py.File('./data/'+filename, 'a') as hf:
         #filename = self.group.name + 'hv{self.id}.pickle'
         with open(filename, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
+
+
+@callback(Output('info_loadgroup', 'children'),
+        Input('load_group-buttom', 'n_clicks'),
+        State('load_group-list', 'value'),
+        )
+def load_group(n, group_list):     
+    global gargalo, biology, eden
+
+    if (len(group_list) == 0 ):
+        print("Choose a group to load.")
+        PreventUpdate
+    elif (len(group_list) == 1):        
+        group_name = group_list[0]
+        print('Loading '+ group_name)
+        gargalo = gargalo.load(group_name)
+        biology = gargalo.biology
+        eden = gargalo.home        
+    else:
+        print("Combining different groups into one. Not implemented yet.")
+    
+    # Info    
+    info_group = 'Loaded '+gargalo.get_info()
+    return info_group
+
+
+@callback(Output('info_creategroup', 'children'),
+        Input('create_group-buttom', 'n_clicks'),
+        State('namegroup-input', 'value'),
+        State('nrhv-input', 'value'),
+        State('bios-dropdown', 'value'),        
+        )
+def create_group(n, name, nr, bio): 
+    if (bio != "New"):
+        filename = f'./data/biologies/{bio}.pickle'
+        biology.load(filename)
+    gargalo.name = name
+    gargalo.generate_gargalo(nr)
+
+    # Info    
+    info_group = 'Created '+gargalo.get_info()
+    return info_group

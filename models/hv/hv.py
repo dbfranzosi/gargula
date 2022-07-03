@@ -21,7 +21,7 @@ class Hv:
         id_last += 1
         self.group = group
         group.hvs[self.id] = self          
-        self.genes = Genes(haploid_father,haploid_mother)         
+        self.genes = Genes(group.biology, haploid_father,haploid_mother)         
         self.pregnant=0 
         self.age=0    
         self.generation = generation             
