@@ -35,8 +35,14 @@ class Biology:
 
     def get_info(self):
         #return f'gestation time: {self.gestationtime} \n genetics: {self.genetics.w} \n meiosis_variation: {self.meiosis_variation}'  
-        return f'The species is characterized by a genetics, gestation time: {self.gestationtime}, meiosis_variation: {self.meiosis_variation}'  
-            
+        #return f'The species is characterized by a genetics, gestation time: {self.gestationtime}, meiosis_variation: {self.meiosis_variation}'  
+        return f'The species {self.name} is characterized by a genetics and meiosis_variation: {self.meiosis_variation}'  
+
+    def save(self):
+        filename = f'./data/biologies/{self.name}.pickle'
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
     def load(self, filename):
         with open(filename, 'rb') as f:
             self = pickle.load(f)      

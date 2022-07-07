@@ -22,6 +22,8 @@ import time
 
 dash.register_page(__name__)
 
+# should not use global variables, instead use long_callbacks and sharing data
+# https://dash.plotly.com/sharing-data-between-callbacks
 releaser = True
 releaser_ext = False
 
@@ -41,7 +43,7 @@ print(lst_bios)
 lst_areas = listdir('./data/areas/')
 lst_areas = [name.split('.')[0] for name in lst_areas]
 
-cards = dbc.CardGroup(
+cards_init = dbc.CardGroup(
     [
         dbc.Card(
             dbc.CardBody(
@@ -76,81 +78,96 @@ cards = dbc.CardGroup(
                 ]
             )
         ),
-    ]
+    ], style={"margin-top": "15px", "margin-bottom": "15px"}
 )
 
-accordion = html.Div(
+accordion_init = html.Div(
     dbc.Accordion(
         [
             dbc.AccordionItem(
                 [
-                    html.P("This is the content of the first section"),
-                    dbc.Button("Click here"),
-                ],
-                title="Load biology",
+                    dbc.Row([
+                        dbc.Col(dcc.Dropdown(lst_bios, id="load_biology-list"), className="me-3",),
+                        dbc.Col(dbc.Button(id="load_biology-buttom", children="Load area", color="primary"), width="auto"),
+                    ], style={"margin-top": "15px"}),                
+                    dbc.Form(
+                        dbc.Row([            
+                                dbc.Label("Meiosis variation (%)", width="auto"),
+                                dbc.Col(
+                                    dbc.Input(id="meiosis-input", type="number", min=0, max=100, placeholder=10),
+                                    className="me-1",
+                                ),            
+                                dbc.Col(dbc.Button(id="create_biology-buttom", children="Create area", color="primary"), width="auto"),
+                            ],
+                            className="g-2",
+                        ),  style={"margin-top": "15px"}    
+                    )           
+                ],                
+                title="Load or create biology",
             ),
             dbc.AccordionItem(
                 [
-                    html.P("This is the content of the second section"),
-                    dbc.Button("Don't click me!", color="danger"),
+                    dbc.Row([
+                        dbc.Col(dcc.Dropdown(lst_areas, id="load_area-list"), className="me-3",),
+                        dbc.Col(dbc.Button(id="load_area-buttom", children="Load area", color="primary"), width="auto"),
+                    ], style={"margin-top": "15px"}),                
+                    dbc.Form(
+                        dbc.Row([            
+                                dbc.Label("Food", width="auto"),
+                                dbc.Col(
+                                    dbc.Input(id="food-input", type="number", min=1, max=25, placeholder=10),
+                                    className="me-1",
+                                ),            
+                                dbc.Label("Food production", width="auto"),
+                                dbc.Col(
+                                    dbc.Input(id="food_production-input", type="number", min=1, max=25, placeholder=10),
+                                    className="me-1",
+                                ),            
+                                dbc.Col(dbc.Button(id="create_area-buttom", children="Create area", color="primary"), width="auto"),
+                            ],
+                            className="g-2",
+                        ),  style={"margin-top": "15px"}    
+                    )
                 ],
-                title="Load area",
+                title="Load or create area",
             ),
-            dbc.AccordionItem(
-                "This is the content of the third section",
-                title="Load group",
+            dbc.AccordionItem([                     
+                    dbc.Row([
+                        dbc.Col(dcc.Checklist(lst_groups, id="load_group-list", inline=True), className="me-3",),
+                        dbc.Col(dbc.Button(id="load_group-buttom", children="Load groups", color="primary"), width="auto"),
+                    ], style={"margin-top": "15px"}),                
+                    dbc.Form(
+                        dbc.Row([            
+                                dbc.Label("Number of homo-virtualis", width="auto"),
+                                dbc.Col(
+                                    dbc.Input(id="nrhv-input", type="number", min=1, max=25, placeholder=10),
+                                    className="me-1",
+                                ),            
+                                dbc.Col(dbc.Button(id="create_group-buttom", children="Create group", color="primary"), width="auto"),
+                            ],
+                            className="g-2",
+                        ),  style={"margin-top": "15px"}    
+                    )
+            ], title="Load or create group",
             ),
         ],
         start_collapsed=True,
-    )
+    ), style={"margin-top": "15px", "margin-bottom": "15px"}
 )
 
-
-layout = html.Div([
-    cards,
-    html.H4("Load groups"),
-    dbc.Row([
-        dbc.Col(dcc.Checklist(lst_groups, id="load_group-list", inline=True), className="me-3",),
-        dbc.Col(dbc.Button(id="load_group-buttom", children="Load groups", color="primary"), width="auto"),
-    ]),
-    html.Div(id='info_loadgroup'), 
-    html.H4("Create group"),
-    dbc.Form(
-    dbc.Row([            
-            dbc.Label("Number of homo-virtualis", width="auto"),
-            dbc.Col(
-                dbc.Input(id="nrhv-input", type="number", min=1, max=25, placeholder=10),
-                className="me-3",
-            ),            
-            dbc.Label("Biology", width="auto"),
-            dbc.Col(
-                dcc.Dropdown(lst_bios, 'New', id='bios-dropdown'),                
-                className="me-3",
-            ),
-            dbc.Col(dbc.Button(id="create_group-buttom", children="Create group", color="primary"), width="auto"),
-        ],
-        className="g-2",
-    )    ),    
-    html.Div(id='info_creategroup'),         
-    html.Div([dbc.Button(id='sim-button', children="Run Simulation", n_clicks=0),], 
-                className="d-grid gap-2", style={"margin-top": "15px"}),    
-    html.Div([
+control_sim = html.Div([
         dcc.Interval(
             id='interval-component',
             interval=eden.timeunit*2000, # in milliseconds
             n_intervals=0
         ),
-        # Constantly updated
-        html.Div(id='info_area'),        
-        html.Div(id='info_group'),         
-        html.Div([dbc.Button(id='savegroup-button', children="Save Group", n_clicks=0),], 
-                className="d-grid gap-2", style={"margin-top": "15px"}),        
-        dcc.Graph(id='fig_hvs'),                
-        dcc.Graph(id='fig_gene')        
-    ]),
-    html.Div([
-        html.P("Family tree:"),
-        cyto.Cytoscape(
+        html.Div([dbc.Button(id='sim-button', children="Run Simulation", n_clicks=0),], 
+                className="d-grid gap-2", style={"margin-top": "15px"}),    
+        html.Div([dbc.Button(id='savegroup-button', children="Save", n_clicks=0),], 
+                className="d-grid gap-2", style={"margin-top": "15px", "margin-bottom": "15px"})
+], style={"margin-top": "15px", "margin-bottom": "15px"})
+
+family_tree = cyto.Cytoscape(
             id='cytoscape',        
             layout={'name': 'preset', 'animate': True},        
             style={'width': '600px', 'height': '500px'},        
@@ -176,15 +193,30 @@ layout = html.Div([
                 }
             ]
         )
-    ]),
-    # Individual HV panel
-    html.Div([
+
+group_panel = html.Div([
+        html.Div(id='info_area'),        
+        html.Div(id='info_group'),   
+        dbc.Row([
+            dbc.Col(dcc.Graph(id='fig_hvs'), width=8),
+            dbc.Col(family_tree, width=4)
+        ]),
+        dcc.Graph(id='fig_gene') 
+], style={"margin-top": "15px", "margin-bottom": "15px"})
+
+hv_panel =     html.Div([
         dcc.Input(id="input-hv", type="number", placeholder="Id of the hv", debounce=True),
-        html.H4(id='info_hv'),        
-        #dcc.Dropdown(id='dropdown-hv', options=[0], value=0),
+        html.Div(id='info_hv'),                
         dcc.Graph(id='fig_hv')
-    ]),
-])
+    ], style={"margin-top": "15px", "margin-bottom": "15px"})
+
+layout = html.Div([
+    cards_init,
+    accordion_init,  
+    control_sim,  
+    group_panel,
+    hv_panel
+],  style={"margin-left": "30px", "margin-right": "30px"})
 
 @callback(
         Output('biology_info_init', 'children'),
@@ -212,17 +244,21 @@ def initialization(name_biology, name_area, name_group, n_load, n_create, group_
     trigger = ctx.triggered_id
 
     if (trigger == 'name_biology-input'):
-        biology.name = name_biology
         if (name_biology in lst_bios):
-            info_biology += '\n Warning: this biology exists and will be overwritten.'
+            info_biology += '\n This species already exists. Choose another name.'
+        else:
+            biology.name = name_biology
+        
     elif (trigger == 'name_area-input'):
-        eden.name = name_area
         if (name_area in lst_areas):
-            info_area += '\n Warning: this area exists and will be overwritten.'
-    elif (trigger == 'name_group-input'):
-        gargalo.name = name_group
+            info_area += '\n This area already exists. Choose another name.'
+        else:
+            eden.name = name_area
+    elif (trigger == 'name_group-input'):        
         if (name_group in lst_groups):
-            info_group += '\n Warning: this group exists and will be overwritten.'
+            info_group += '\n This group already exists. Choose another name.'
+        else:
+            gargalo.name = name_group
     elif(trigger == 'load_group-buttom'):
         # Load group
         if (len(group_list) == 0 ):
@@ -237,8 +273,10 @@ def initialization(name_biology, name_area, name_group, n_load, n_create, group_
             #"Combining different groups into one. Not implemented yet."
             pass
     elif (trigger == 'create_group-buttom'):
-        gargalo.name = name
-        gargalo.generate_gargalo(nr)
+        if (name_group in lst_groups):
+            info_group += '\n This group already exists. Choose another name.'
+        else:
+            gargalo.generate_gargalo(nrhv)
 
     info_biology += biology.get_info()    
     info_area += eden.get_info() 
@@ -247,31 +285,27 @@ def initialization(name_biology, name_area, name_group, n_load, n_create, group_
     return info_biology, info_area, info_group
 
 @callback(Output('sim-button', 'color'),
-        Output('sim-button', 'children'),            
+        Output('sim-button', 'children'),
+        Output('savegroup-button', 'disabled'),            
         Input('sim-button', 'n_clicks'),
-        )
-def control_sim(n): 
-    global simulating
-    if (n % 2 == 0):
-        print("test")
-        simulating = False
-        return "primary", "Run Simulation"
-    else:
-        simulating = True
-        return "danger", "Stop Simulation"
-
-@callback(Output('savegroup-button', 'color'),
-        Output('savegroup-button', 'children'),            
         Input('savegroup-button', 'n_clicks'),
         )
-def save_group(n): 
+def control_sim(n_run, n_sim): 
     global simulating, passing_turn, saving
-    if (simulating or passing_turn or n==0):
-        raise PreventUpdate    
-    saving = True
-    gargalo.save()    
-    saving = False
-    # move to long_callback
+
+    trigger = ctx.triggered_id
+    if (trigger == 'savegroup-button'):
+        saving = True
+        gargalo.save()    
+        saving = False
+
+    if (n_run % 2 == 0):
+        print("test")
+        simulating = False
+        return "primary", "Run Simulation", False
+    else:
+        simulating = True
+        return "danger", "Stop Simulation", True
 
 def get_physical_rep(profile):
     x = profile.index
@@ -383,7 +417,7 @@ def update_hv_panel(hv_sel):
     # add list of hv to info
     info_hv = 'This homo-virtualis is not in the group.'
     fig_hv = make_subplots(rows=2, cols=2, 
-                    subplot_titles=["gen values", "trait values", "", "Nr of actions"])     
+                    subplot_titles=["gen values", "trait values", "Rewards", "Nr of actions"])     
     
     #print('hv_sel=', hv_sel)  
     if hv_sel in lst_ids:           
@@ -391,14 +425,11 @@ def update_hv_panel(hv_sel):
         info_hv = hv.get_info(show_genes=False, show_action=True, show_visible=False)        
         genes = hv.get_genes()
         traits = hv.genes.phenotype.traits
-        if (hv.history.__len__() == 0):
-            y_actions = {action : 0.0 for action in ACTIONS}
-        else:
-            y_actions = hv.history.get_indicators()
-        #print('y_actions=', y_actions)
+        y_actions, y_reward = hv.history.get_indicators()
         
         fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
         fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)        
+        fig_hv.add_trace(go.Scatter(y=y_reward, mode="lines", showlegend=False), row=2, col=1)    
         for action in ACTIONS:                 
             fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)    
 

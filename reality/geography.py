@@ -62,6 +62,11 @@ class Area:
 
         return True
     
+    def save(self):
+        filename = f'./data/areas/{self.name}.pickle'
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
+
     def load(self, filename):
         with open(filename, 'rb') as f:
             self = pickle.load(f)   

@@ -16,6 +16,7 @@ class Group:
     
     def __init__(self, id=0, name='', home=None, hvs={}):
         self.id = id
+        self.id_last = 0 # id of last hv +1
         self.name = name
         self.home = home
         if home:
@@ -123,21 +124,11 @@ class Group:
         filename = f'./data/groups/{self.name}.pickle'
         with open(filename, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
-        # # save also the biology and the area of the group
-        # filename = f'./data/biologies/bio_{self.biology.name}.pickle'
-        # with open(filename, 'wb') as f:
-        #     pickle.dump(self.biology, f, pickle.HIGHEST_PROTOCOL)
-        # filename = f'./data/areas/{self.home.name}.pickle'
-        # with open(filename, 'wb') as f:
-        #     pickle.dump(self.home, f, pickle.HIGHEST_PROTOCOL)
 
     def load(self, name):
         filename = f'./data/groups/{name}.pickle'
         with open(filename, 'rb') as f:
             self = pickle.load(f)     
-        print(self.name)
-        print(self.get_info())      
-        print(self.home.clock)
         return self
 
 gargalo = Group(name='Gargalo', home=eden)

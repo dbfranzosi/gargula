@@ -7,7 +7,7 @@ Transition = namedtuple('Transition',
 
 class ReplayMemory(object):
 
-    def __init__(self, capacity=20):
+    def __init__(self, capacity=100):
         self.memory = deque([],maxlen=capacity)
 
     def push(self, *args):
@@ -25,3 +25,5 @@ def perception(group):
     obj = np.zeros((MAX_HVS_IN_GROUP, NR_FEATURES))    
     obj[0:nr_hvs] = np.array([hv.visible.features for hv in group.hvs.values()])
     return obj
+
+

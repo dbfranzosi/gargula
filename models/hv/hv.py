@@ -9,17 +9,13 @@ from .history import HvHistory
 import time
 
 
-id_last = 0
-
 class Hv:
         
-    def __init__(self, group=None, haploid_father=None, haploid_mother=None, energy = 0.0, generation=1, name=''):
+    def __init__(self, group, haploid_father=None, haploid_mother=None, energy = 0.0, generation=1, name=''):        
         
-        global id_last
-
-        self.id = id_last
-        id_last += 1
         self.group = group
+        self.id = group.id_last
+        self.group.id_last += 1
         group.hvs[self.id] = self          
         self.genes = Genes(group.biology, haploid_father,haploid_mother)         
         self.pregnant=0 
@@ -57,8 +53,8 @@ class Hv:
     
     def death(self):
         if (self.energy<0):
-            #print('=== Someone Died.')
-            #self.visualize()
+            # save importat info of history
+            self.history.save()
             del self.group.hvs[self.id]                                    
 
     def make_baby(self, mother):
@@ -92,3 +88,5 @@ class Hv:
         
     def get_genes(self):
         return self.genes.sequence[0]+self.genes.sequence[1]
+
+    
