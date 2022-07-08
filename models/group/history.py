@@ -70,19 +70,7 @@ class GroupHistory:
         with open(f'./data/history/{self.owner.name}.csv', 'a') as f:
             df.to_csv(f, mode='a', index=False, header=header)
 
-    def load(self):
-        #print('load')
-        if not exists(f'./data/history/{self.owner.name}.csv'):
-            return None
 
-        with open(f'./data/history/{self.owner.name}.csv', 'r') as f:
-            df = pd.read_csv(f)
-        return df
-
-    def read_metric(self, metric):
-        print('read metrics')
-        df = self.load()
-        print(df.head())
         
 
     

@@ -3,7 +3,6 @@ from reality.biology import biology
 from reality.geography import eden
 from models.group.group import gargalo
 from settings import *
-from models.group.visualization import *
 import pandas as pd
 
 ''' Frontend '''
@@ -35,11 +34,10 @@ visualize_settings()
 
 lst_groups = listdir('./data/groups/')
 lst_groups = [name.split('.')[0] for name in lst_groups]
-print(lst_groups)
+
 lst_bios = listdir('./data/biologies/')
 lst_bios = [name.split('.')[0] for name in lst_bios]
-lst_bios.append('New')
-print(lst_bios)
+
 lst_areas = listdir('./data/areas/')
 lst_areas = [name.split('.')[0] for name in lst_areas]
 
