@@ -124,7 +124,10 @@ class GraphMind(MemoryGraphMind):
                 self.action = predicted.argmax().expand(1)                 
                 target_nr, action_nr = divmod(int(self.action), nr_class_actions) 
                 action_code = [ACTIONS[action_nr], target_nr]                
-                action = get_action(action_code, self.owner)   
+                action = get_action(action_code, self.owner)
+
+                # print("predicted=", predicted)   
+                # print("action (self)=", action, self.action)   
         else:
             nr_hvs = self.group.nr_hvs()
             target_nr, action_nr = random.randrange(0, nr_hvs), random.randrange(0, nr_class_actions)
@@ -132,6 +135,7 @@ class GraphMind(MemoryGraphMind):
             action_code = [ACTIONS[action_nr], target_nr]            
             action = get_action(action_code, self.owner)    
         self.reward = torch.tensor([action.reward], device=device, dtype=torch.float) 
+        # print('reward=', reward)
         return action
 
 class GraphDQLMind(GraphMind):
@@ -159,20 +163,10 @@ class GraphDQLMind(GraphMind):
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
         
-        # print('sb=', state_batch.shape)
-        # print('actb=', action_batch)
-        
         predicted = self.policy_net(state_batch, RS, RR)        
-
-        # print('pred=', predicted)
-        # print('pview=', predicted.view(BATCH_SIZE, -1))
-        # print(action_batch)
 
         # Flatten O[Do, Np] to pick the action (one-index)
         state_action_values = predicted.view(BATCH_SIZE, -1).gather(1, action_batch)
-        
-        # print('sact=', state_action_values)
-        # print('===============')
         
         # Compute V(s_{t+1}) for all next states.
         # Expected values of actions are computed based
@@ -187,13 +181,13 @@ class GraphDQLMind(GraphMind):
 
         # print(state_batch.size(), ' ', RS.size(), ' ', RR.size())
         # print('predicted=', predicted)
-        # print('state=', state_action_values)
-        # print('expected=', expected_state_action_values)
+        print('state=', state_action_values)
+        print('expected=', expected_state_action_values)
         # print('reward=', reward_batch)
         # # Compute Huber loss
         criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values)
-        #print(loss)
+        print('loss=', loss)
 
         # Optimize the model
         self.optimizer.zero_grad()

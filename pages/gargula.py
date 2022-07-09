@@ -86,7 +86,7 @@ accordion_init = html.Div(
                 [
                     dbc.Row([
                         dbc.Col(dcc.Dropdown(lst_bios, id="load_biology-list"), className="me-3",),
-                        dbc.Col(dbc.Button(id="load_biology-buttom", children="Load area", color="primary"), width="auto"),
+                        dbc.Col(dbc.Button(id="load_biology-buttom", children="Load biology", color="primary"), width="auto"),
                     ], style={"margin-top": "15px"}),                
                     dbc.Form(
                         dbc.Row([            
@@ -95,7 +95,7 @@ accordion_init = html.Div(
                                     dbc.Input(id="meiosis-input", type="number", min=0, max=100, placeholder=10),
                                     className="me-1",
                                 ),            
-                                dbc.Col(dbc.Button(id="create_biology-buttom", children="Create area", color="primary"), width="auto"),
+                                dbc.Col(dbc.Button(id="create_biology-buttom", children="Create biology", color="primary"), width="auto"),
                             ],
                             className="g-2",
                         ),  style={"margin-top": "15px"}    

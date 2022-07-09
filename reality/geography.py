@@ -12,7 +12,7 @@ class Area:
     Basic class for the area, where hv and food sits.
     '''
 
-    def __init__(self, id=0, name='', groups={}, dimensions = [50,50], food=10.0):        
+    def __init__(self, id=0, name='', groups={}, dimensions = [50,50], food=100*UNIT_ENERGY, food_generation=10*UNIT_ENERGY):        
         self.id = id
         self.name = name
         self.timeunit = 2
@@ -20,7 +20,7 @@ class Area:
         self.groups = groups        
         self.dimensions = dimensions # h x w 
         self.food = food
-        self.food_generation = 10*UNIT_ENERGY # enough to keep 10 hv resting 
+        self.food_generation = food_generation # enough to keep 10 hv resting 
     
     def nr_groups(self):
         return len(self.groups) 

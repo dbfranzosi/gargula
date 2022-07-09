@@ -28,24 +28,28 @@ group_panel = html.Div([
     ], style={"margin-top": "15px", "margin-bottom": "15px"})
 
 layout = html.Div(children=[    
-    dcc.Checklist(lst_groups, id="coruja_load_group-list", inline=True, value=["Gargalo"]),    
+    dcc.Checklist(options=lst_groups, id="coruja_load_group-list", inline=True, value=["Gargalo"]),    
     group_panel
 ])
 
 @callback(  Output('coruja_info_group', 'children'), 
             Output('coruja_fig_learning', 'figure'),                       
             Output('coruja_fig_genetics', 'figure'),
+            Output("coruja_load_group-list", 'options'),
             Input("coruja_load_group-list", 'value'))
 def update_hv_panel(group_sel):
-
+    
     if (group_sel == None):
         print("Group is None")
         raise PreventUpdate
 
+    lst_groups = listdir('./data/groups/')
+    lst_groups = [name.split('.')[0] for name in lst_groups]
+
     print(f"Loading {group_sel}")
 
     fig_learning = make_subplots(rows=2, cols=2, 
-                    subplot_titles=["", "", "", ""])     
+                    subplot_titles=["Avg reward", "Age X Slope", "Age", ""])     
     fig_genetics = make_subplots(rows=1, cols=1, 
                     subplot_titles=["", "", "", ""])         
 
@@ -64,6 +68,7 @@ def update_hv_panel(group_sel):
         hhv["slope"] = - hhv.apply(lambda x: x[0:int(x['age']/2)].sum(),axis=1)
         hhv["slope"] += hhv.apply(lambda x: x[int(x['age']/2):int(x['age'])].sum(),axis=1)
                 
+        print(hhv.loc[hhv["slope"]<0])
         hist_hvs_long[name] = hhv.loc[hhv[199].notna()]
 
         info += f'{name}: In {h.shape[0]} days {hhv.shape[0]} hvs died. {hist_hvs_long[name].shape[0]} lived more than 200 days. \n'
@@ -90,8 +95,7 @@ def update_hv_panel(group_sel):
         #             y=h[action], mode="lines"),
         #         row=2, col=2)
         
-        
-        print(h.columns)
+        #print(h.columns)
 
         for trait in TRAITS:
             fig_genetics.add_trace(
@@ -101,7 +105,5 @@ def update_hv_panel(group_sel):
                 row=1, col=1)
         
 
-    return info, fig_learning, fig_genetics
+    return info, fig_learning, fig_genetics, lst_groups
     
-
-
