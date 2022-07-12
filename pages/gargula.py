@@ -309,16 +309,24 @@ def initialization(name_biology, name_area, name_group, n_load_bio, n_create_bio
             eden = gargalo.home 
             str_groups = group_name
             str_non_comp = ''
+            
             for group_name in group_list[1:]:                
                 gargalo, bmerge = gargalo.merge(group_name) 
                 if bmerge:
-                    str_groups += f"{group_name}_" 
+                    str_groups += f"{group_name}" 
                 else:
                     str_non_comp += f"{group_name}" 
             gargalo.name = str_groups
+            eden.name = eden.name + str_groups
+            print(gargalo.get_info())
+            for hv in gargalo.hvs.values():
+                print(hv.name)
+                print(hv.id)
+                print(hv.age)
+                print(hv.group.name)
             text_load_group = f"Group, biology and area from {group_name} have been loaded. \n \
-                Groups {str_groups} merged. Name of group changed. \n \
-                Groups {str_non_comp} not compatible."   
+                Groups ({str_groups}) merged. Groups ({str_non_comp}) not compatible. \n \
+                Name of group and area changed."   
             
 
     elif (trigger == 'create_biology-buttom'):

@@ -12,7 +12,7 @@ import time
 class Hv:
         
     def __init__(self, group, haploid_father=None, haploid_mother=None, energy = 0.0, generation=1, name=''):        
-        
+
         self.group = group
         self.id = group.id_last
         self.group.id_last += 1

@@ -122,6 +122,12 @@ class Group:
                 if (hv.parents[1] in hvids):      
                     family.append({'data': {'source': hvid, 'target': hv.parents[1], 'role': 'mother'}})          
         return family
+    
+    def add_hv(self, hv):                       
+        hv.group = self
+        hv.id = self.id_last
+        self.hvs[hv.id] = hv
+        self.id_last += 1 
 
     def save(self):
         filename = f'./data/groups/{self.name}.pickle'
@@ -140,12 +146,9 @@ class Group:
             group_add = pickle.load(f)             
             if (self.biology == group_add.biology):
                 for hv in group_add.hvs.values():
-                    hv_new = Hv(group=self, name=hv.name, haploid_father=hv.genes.sequence[0], haploid_mother=hv.genes.sequence[1])        
-                    hv_new = hv
-                    hv_new.name += name
-                    hv_new.group = self
-                    hv_new.id = self.id_last
-                    self.id_last += 1 
+                    self.add_hv(hv)
+                    hv.name = name + hv.name                    
+
                 return self, True
             else:
                 return self, False
