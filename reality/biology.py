@@ -23,7 +23,17 @@ class Genetics:
         
         self.w = {}
         for trait in TRAITS:
-            self.w[trait] = gene_expression(GEN_SIZE)            
+            self.w[trait] = gene_expression(GEN_SIZE)      
+
+    def __eq__(self, other): 
+        if not isinstance(other, Genetics):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+        check = True
+        for trait in TRAITS:
+            check = check and np.array_equal(self.w[trait], other.w[trait])
+        return check
+        
 
 class Biology:
 
@@ -32,6 +42,15 @@ class Biology:
         self.genetics = genetics
         self.meiosis_variation = 0.1 # mean value of Poisson distribution for nr of genes suffering mutation
         self.name = name
+
+    def __eq__(self, other): 
+        if not isinstance(other, Biology):
+            # don't attempt to compare against unrelated types
+            return NotImplemented
+
+        return self.name == other.name and self.gestationtime == other.gestationtime and \
+                self.genetics == other.genetics and self.meiosis_variation == other.meiosis_variation
+
 
     def get_info(self):
         #return f'gestation time: {self.gestationtime} \n genetics: {self.genetics.w} \n meiosis_variation: {self.meiosis_variation}'  
@@ -43,8 +62,8 @@ class Biology:
         with open(filename, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
-    def load(self, filename):
-        with open(filename, 'rb') as f:
+    def load(self, name):
+        with open(f'./data/biologies/{name}.pickle', 'rb') as f:
             self = pickle.load(f)      
         return self        
 

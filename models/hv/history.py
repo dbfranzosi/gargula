@@ -7,7 +7,7 @@ Indicators = namedtuple('Indicators',
 
 class HvHistory:
 
-    def __init__(self, owner, capacity=100):
+    def __init__(self, owner, capacity=500):
         self.memory = deque([], maxlen=capacity)
         self.owner = owner
         self.capacity = capacity        

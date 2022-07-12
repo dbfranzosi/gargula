@@ -17,7 +17,7 @@ class Hv:
         self.id = group.id_last
         self.group.id_last += 1
         group.hvs[self.id] = self          
-        self.genes = Genes(group.biology, haploid_father,haploid_mother)         
+        self.genes = Genes(group.biology, haploid_father, haploid_mother)         
         self.pregnant=0 
         self.age=0    
         self.generation = generation             
@@ -30,8 +30,8 @@ class Hv:
         self.visible = Visible(self)                
         self.action = Rest(self) 
 
-        self.mind = GraphDQLMind(self, memory_capacity=100)
-        self.history = HvHistory(self, 200)
+        self.mind = GraphDQLMind(self, memory_capacity=1000)
+        self.history = HvHistory(self, capacity=1000)
 
     def act(self):
         self.action = self.mind.decide_action()        

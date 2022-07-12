@@ -78,7 +78,8 @@ class Eat(Action):
 
         self.owner.energy += amount
         self.owner.group.home.food -= amount
-        self.reward = self.owner.genes.phenotype.traits['reward_eat']*amount/UNIT_ENERGY
+        #self.reward = self.owner.genes.phenotype.traits['reward_eat']*amount/UNIT_ENERGY
+        self.reward = self.owner.genes.phenotype.traits['reward_eat']
         
 class TrySex(TargetedAction):
     def __init__(self, owner, target):        
@@ -90,18 +91,19 @@ class TrySex(TargetedAction):
 
         super().__init__(owner, target, conditions=conditions)  
         self.name = 'try_sex'
-        self.reward = 0.0      
+        self.reward = self.owner.genes.phenotype.traits['reward_sex']*10 
                 
         if owner == target:
             self.description = f'{owner.name} is touching hemself! (hem=him/her)'
-            self.reward = self.owner.genes.phenotype.traits['reward_sex']*0.1                 
+            #self.reward = self.reward*0.1                 
         else:
             self.description = f'{owner.name} is naked with {target.name}!'
             self.energy_cost *= 2
-        if conditions:
-            self.reward = self.owner.genes.phenotype.traits['reward_sex']     
+            #self.reward = self.reward*2
+        if conditions:            
             self.description += f' They love each other!'
             self.energy_cost *= 3
+            #self.reward = self.reward*10
 
     def effects(self):
         super().effects()

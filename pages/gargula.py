@@ -47,7 +47,7 @@ cards_init = dbc.CardGroup(
             dbc.CardBody(
                 [
                     html.H5("Biology", className="card-title"),
-                    dbc.Input(id="name_biology-input", type="text", placeholder="homo-virtualis", debounce=True),
+                    dbc.Input(id="name_biology-input", type="text", value="homo-virtualis", debounce=True),
                     html.P(id="biology_info_init",
                         className="card-text",
                     ),
@@ -58,7 +58,7 @@ cards_init = dbc.CardGroup(
             dbc.CardBody(
                 [
                     html.H5("Area", className="card-title"),
-                    dbc.Input(id="name_area-input", type="text", placeholder="Eden", debounce=True),
+                    dbc.Input(id="name_area-input", type="text", value="Eden", debounce=True),
                     html.P(id="area_info_init",
                         className="card-text",
                     ),
@@ -69,7 +69,7 @@ cards_init = dbc.CardGroup(
             dbc.CardBody(
                 [
                     html.H5("Group", className="card-title"),
-                    dbc.Input(id="name_group-input", type="text", placeholder="Gargalo", debounce=True),
+                    dbc.Input(id="name_group-input", type="text", value="Gargalo", debounce=True),
                     html.P(id="group_info_init",
                         className="card-text",
                     ),
@@ -86,7 +86,7 @@ accordion_init = html.Div(
                 [
                     dbc.Row([
                         dbc.Col(dcc.Dropdown(lst_bios, id="load_biology-list"), className="me-3",),
-                        dbc.Col(dbc.Button(id="load_biology-buttom", children="Load biology", color="primary"), width="auto"),
+                        dbc.Col(dbc.Button(id="load_biology-buttom", children="Load biology", color="primary"), width="auto"),                 
                     ], style={"margin-top": "15px"}),                
                     dbc.Form(
                         dbc.Row([            
@@ -99,7 +99,8 @@ accordion_init = html.Div(
                             ],
                             className="g-2",
                         ),  style={"margin-top": "15px"}    
-                    )           
+                    ),
+                    html.Div("", id="text_load_bio")           
                 ],                
                 title="Load or create biology",
             ),
@@ -125,27 +126,30 @@ accordion_init = html.Div(
                             ],
                             className="g-2",
                         ),  style={"margin-top": "15px"}    
-                    )
+                    ),
+                    html.Div("", id="text_load_area")           
                 ],
                 title="Load or create area",
             ),
             dbc.AccordionItem([                     
                     dbc.Row([
                         dbc.Col(dcc.Checklist(lst_groups, id="load_group-list", inline=True), className="me-3",),
+                        dbc.Col(dbc.Button(id="clean_group-buttom", children="Clean group", color="primary"), width="auto"),
                         dbc.Col(dbc.Button(id="load_group-buttom", children="Load groups", color="primary"), width="auto"),
                     ], style={"margin-top": "15px"}),                
                     dbc.Form(
                         dbc.Row([            
                                 dbc.Label("Number of homo-virtualis", width="auto"),
                                 dbc.Col(
-                                    dbc.Input(id="nrhv-input", type="number", min=1, max=25, placeholder=10),
+                                    dbc.Input(id="nrhv-input", type="number", min=1, max=25, value=10),
                                     className="me-1",
                                 ),            
                                 dbc.Col(dbc.Button(id="create_group-buttom", children="Create group", color="primary"), width="auto"),
                             ],
                             className="g-2",
                         ),  style={"margin-top": "15px"}    
-                    )
+                    ),
+                    html.Div("", id="text_load_group")           
             ], title="Load or create group",
             ),
         ],
@@ -220,15 +224,26 @@ layout = html.Div([
         Output('biology_info_init', 'children'),
         Output('area_info_init', 'children'),
         Output('group_info_init', 'children'),
+        Output('text_load_bio', 'children'),
+        Output('text_load_area', 'children'),        
+        Output('text_load_group', 'children'),        
         Input('name_biology-input', 'value'),
         Input('name_area-input', 'value'),
         Input('name_group-input', 'value'),
+        Input('load_biology-buttom', 'n_clicks'),                        
+        Input('create_biology-buttom', 'n_clicks'),
+        Input('load_area-buttom', 'n_clicks'),   
+        Input('create_area-buttom', 'n_clicks'),             
         Input('load_group-buttom', 'n_clicks'),                
         Input('create_group-buttom', 'n_clicks'),
+        Input('clean_group-buttom', 'n_clicks'),                
+        State('load_biology-list', 'value'),        
+        State('load_area-list', 'value'),        
         State('load_group-list', 'value'),        
         State('nrhv-input', 'value'),        
         )
-def initialization(name_biology, name_area, name_group, n_load, n_create, group_list, nrhv):
+def initialization(name_biology, name_area, name_group, n_load_bio, n_create_bio, n_load_area, n_create_area,
+        n_load_group, n_create_group, n_clean_group, biology_list, area_list, group_list, nrhv):
     global gargalo, biology, eden
     global simulating, saving, passing_turn
 
@@ -238,6 +253,9 @@ def initialization(name_biology, name_area, name_group, n_load, n_create, group_
     info_biology = ''
     info_area = ''
     info_group = ''
+    text_load_bio = ''
+    text_load_area = ''
+    text_load_group = ''
 
     trigger = ctx.triggered_id
 
@@ -257,53 +275,111 @@ def initialization(name_biology, name_area, name_group, n_load, n_create, group_
             info_group += '\n This group already exists. Choose another name.'
         else:
             gargalo.name = name_group
+    elif(trigger == 'load_biology-buttom'):
+        if (biology_list == None):
+            text_load_bio = f"Choose a biology or group to load a biology."
+            pass
+        else:            
+            biology = biology.load(biology_list)   
+            gargalo.biology = biology             
+            text_load_bio = f"Biology {biology_list} has been loaded." 
+    elif(trigger == 'load_area-buttom'):
+        if (area_list == None):
+            text_load_area = f"Choose an area or group to load area."
+            pass
+        else:            
+            eden = eden.load(area_list)  
+            gargalo.home = eden              
+            text_load_area = f"Area {area_list} has been loaded." 
     elif(trigger == 'load_group-buttom'):
         # Load group
         if (len(group_list) == 0 ):
-            #group_info_init = "Choose a group to load or create a new group."
+            text_load_group = f"Choose a group to load or create a new group."
             pass
         elif (len(group_list) == 1):        
             group_name = group_list[0]        
             gargalo = gargalo.load(group_name)
             biology = gargalo.biology
-            eden = gargalo.home                
+            eden = gargalo.home       
+            text_load_group = f"Group, biology and area from {group_name} have been loaded."   
+        else:            
+            group_name = group_list[0]        
+            gargalo = gargalo.load(group_name)
+            biology = gargalo.biology
+            eden = gargalo.home 
+            str_groups = group_name
+            str_non_comp = ''
+            for group_name in group_list[1:]:                
+                gargalo, bmerge = gargalo.merge(group_name) 
+                if bmerge:
+                    str_groups += f"{group_name}_" 
+                else:
+                    str_non_comp += f"{group_name}" 
+            gargalo.name = str_groups
+            text_load_group = f"Group, biology and area from {group_name} have been loaded. \n \
+                Groups {str_groups} merged. Name of group changed. \n \
+                Groups {str_non_comp} not compatible."   
+            
+
+    elif (trigger == 'create_biology-buttom'):
+        if (name_biology in lst_bios):
+            info_biology += '\n This group already exists. Choose another name.'
         else:
-            #"Combining different groups into one. Not implemented yet."
+            # change the parameters of bio here
             pass
+
+    elif (trigger == 'create_area-buttom'):
+        if (name_area in lst_areas):
+            info_area += '\n This area already exists. Choose another name.'
+        else:
+            #change parameters of area here
+            pass
+
     elif (trigger == 'create_group-buttom'):
         if (name_group in lst_groups):
             info_group += '\n This group already exists. Choose another name.'
         else:
             gargalo.generate_gargalo(nrhv)
 
+    elif (trigger == 'clean_group-buttom'):        
+        gargalo = gargalo.clean()        
+
     info_biology += biology.get_info()    
     info_area += eden.get_info() 
     info_group += gargalo.get_info()    
 
-    return info_biology, info_area, info_group
+    return info_biology, info_area, info_group, text_load_bio, text_load_area, text_load_group
 
 @callback(Output('sim-button', 'color'),
         Output('sim-button', 'children'),
-        Output('savegroup-button', 'disabled'),            
+        Output('savegroup-button', 'disabled'),   
+        Output('load_group-list', 'options'),          
         Input('sim-button', 'n_clicks'),
         Input('savegroup-button', 'n_clicks'),
         )
 def control_sim(n_run, n_sim): 
     global simulating, passing_turn, saving
 
+    lst_groups = listdir('./data/groups/')
+    lst_groups = [name.split('.')[0] for name in lst_groups]        
+
     trigger = ctx.triggered_id
     if (trigger == 'savegroup-button'):
         saving = True
-        gargalo.save()    
+        biology.save()
+        eden.save()
+        gargalo.save()            
         saving = False
 
-    if (n_run % 2 == 0):
-        print("test")
+        lst_groups = listdir('./data/groups/')
+        lst_groups = [name.split('.')[0] for name in lst_groups]        
+
+    if (n_run % 2 == 0):        
         simulating = False
-        return "primary", "Run Simulation", False
+        return "primary", "Run Simulation", False, lst_groups
     else:
         simulating = True
-        return "danger", "Stop Simulation", True
+        return "danger", "Stop Simulation", True, lst_groups
 
 def get_physical_rep(profile):
     x = profile.index
@@ -346,10 +422,10 @@ def update_graph_live(n):
     if holder:
         raise PreventUpdate 
     passing_turn = True
-    before = time.time()
+    #before = time.time()
     passing_turn = not eden.pass_day()       
-    after = time.time()    
-    print('interval=', after - before)    
+    #after = time.time()    
+    #print('interval=', after - before)    
 
     # Info
     info_area = eden.get_info() 
@@ -380,7 +456,8 @@ def update_graph_live(n):
         mode="markers",
         marker=go.scatter.Marker(**legs[2]), showlegend=False
     ))
-    fig_hvs.update_yaxes(range=[-50, 300])      
+    max_age = max(profile["age"])
+    fig_hvs.update_yaxes(range=[-50, max_age+50])      
     fig_hvs.update_layout(    
         xaxis_title="Id",
         yaxis_title="Age",          

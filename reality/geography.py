@@ -1,5 +1,6 @@
 import time
 import random
+import pickle
 from settings import *
 
 class Geography:
@@ -67,8 +68,8 @@ class Area:
         with open(filename, 'wb') as f:
             pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
-    def load(self, filename):
-        with open(filename, 'rb') as f:
+    def load(self, name):
+        with open(f'./data/areas/{name}.pickle', 'rb') as f:
             self = pickle.load(f)   
         return self
 

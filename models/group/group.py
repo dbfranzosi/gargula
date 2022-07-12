@@ -24,7 +24,7 @@ class Group:
         self.hvs = hvs
         self.biology = biology
         self.history = GroupHistory(self, capacity=100)
-
+    
     def nr_hvs(self):
         return len(self.hvs)  
     
@@ -60,8 +60,11 @@ class Group:
             name = lst_names[id] if id<len(lst_names) else f'HV_{id}' 
             haploid_father = rng.integers(0, 2, size=GEN_SIZE)
             haploid_mother = rng.integers(0, 2, size=GEN_SIZE)
-            hv = Hv(group=self, name=name, haploid_father=haploid_father, haploid_mother=haploid_mother)
-            hv.age = 50 # all adults 
+            hv = Hv(group=self, name=name, haploid_father=haploid_father, haploid_mother=haploid_mother)            
+            # make id=0 imortal for test purpose
+            # if (id == 0):
+            #     hv.genes.phenotype.traits['energy_pool'] = 100000.
+            #     hv.energy = 100000.
 
     def get_info(self):
         str_hvs = ', '.join([hv.name for hv in self.hvs.values()])        
@@ -130,6 +133,27 @@ class Group:
         with open(filename, 'rb') as f:
             self = pickle.load(f)     
         return self
+    
+    def merge(self, name):
+        filename = f'./data/groups/{name}.pickle'
+        with open(filename, 'rb') as f:
+            group_add = pickle.load(f)             
+            if (self.biology == group_add.biology):
+                for hv in group_add.hvs.values():
+                    hv_new = Hv(group=self, name=hv.name, haploid_father=hv.genes.sequence[0], haploid_mother=hv.genes.sequence[1])        
+                    hv_new = hv
+                    hv_new.name += name
+                    hv_new.group = self
+                    hv_new.id = self.id_last
+                    self.id_last += 1 
+                return self, True
+            else:
+                return self, False
+
+    def clean(self):
+        self = Group(name='Gargalo', home=eden)
+        return self
+
 
 gargalo = Group(name='Gargalo', home=eden)
 # gargalo.generate_gargalo()

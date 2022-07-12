@@ -47,12 +47,15 @@ class RelationalModel(nn.Module):
         
         self.layers = nn.Sequential(
             nn.Linear(input_size, hidden_size),
+            nn.BatchNorm1d(hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, hidden_size),
+            nn.BatchNorm1d(hidden_size),
             nn.ReLU(),
             nn.Linear(hidden_size, hidden_size),
+            nn.BatchNorm1d(hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, output_size),
+            nn.Linear(hidden_size, output_size),            
             nn.ReLU()
         )
     
@@ -77,8 +80,9 @@ class ObjectModel(nn.Module):
         
         self.layers = nn.Sequential(
             nn.Linear(input_size, hidden_size),
+            nn.BatchNorm1d(hidden_size),
             nn.ReLU(),
-            nn.Linear(hidden_size, output_size), #rest, eat (non-targeted). sex, attack (targeted)
+            nn.Linear(hidden_size, output_size), #rest, eat (non-targeted). sex, attack (targeted)            
         )
         
     def forward(self, x):
@@ -95,12 +99,29 @@ class ObjectModel(nn.Module):
         x = x.view(batch_size, n_objects, self.output_size)
         return x
 
+def weights_init_normal(m):
+    '''Takes in a module and initializes all linear layers with weight
+        values taken from a normal distribution.'''
+
+    classname = m.__class__.__name__
+    # for every Linear layer in a model
+    if classname.find('Linear') != -1:
+        y = m.in_features        
+    # m.weight.data shoud be taken from a normal distribution
+        m.weight.data.normal_(0.0,1/np.sqrt(100*y))
+    # m.bias.data should be 0
+        m.bias.data.fill_(0)
+
 class InteractionNetwork(nn.Module):
+
     def __init__(self, n_objects, object_dim, n_relations, effect_dim, output_dim):
         super(InteractionNetwork, self).__init__()
         
         self.relational_model = RelationalModel(2*object_dim, effect_dim, 150)
         self.object_model     = ObjectModel(object_dim + effect_dim, 100, output_dim)
+
+        # set normal weights
+        self.apply(weights_init_normal)
     
     def forward(self, objects, sender_relations, receiver_relations):
         senders   = sender_relations.permute(0, 2, 1).bmm(objects)
