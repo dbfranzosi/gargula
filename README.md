@@ -1,4 +1,4 @@
-# gargalo_basic
+# Gargula
 History of the first homo-virtualis.
 
 Gargalo is a framework for the simulation of a virtual society based on multi-agent interactions.
