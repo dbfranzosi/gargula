@@ -15,7 +15,7 @@ class BaseMind:
         self.owner = owner 
         self.group = owner.group  
         self.nr_active_actions = self.group.nr_hvs()*nr_targeted_actions + nr_nontarg_actions
-        self.memory = ReplayMemory(100)
+        self.memory = ReplayMemory()
         
     def decide_action(self, action_nr=nr_actions-1):        
         action_code = lst_actions[action_nr]        
@@ -60,6 +60,13 @@ class PonderMind(BaseMind):
         ponder = b
         return  np.rint(ponder[lst_passive_actions[action_name]])
 
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torch.nn.functional as F
+from torch.autograd import Variable
+from torch.utils.data import Dataset, DataLoader
+
 class MemoryGraphMind(PonderMind):
     def __init__(self, owner, memory_capacity):
         super().__init__(owner)
@@ -80,21 +87,6 @@ class MemoryGraphMind(PonderMind):
         self.next_state = torch.tensor(perception(self.group), device=device, dtype=torch.float) 
         self.memory.push(self.state, self.action, self.next_state, self.reward)
 
-import torch
-import torch.nn as nn
-import torch.optim as optim
-import torch.nn.functional as F
-from torch.autograd import Variable
-from torch.utils.data import Dataset, DataLoader
-
-# Training
-#BATCH_SIZE = 128
-BATCH_SIZE = 5
-GAMMA = 0.999
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 200
-TARGET_UPDATE = 10
 
 class GraphMind(MemoryGraphMind):
     def __init__(self, owner, memory_capacity):
@@ -103,7 +95,7 @@ class GraphMind(MemoryGraphMind):
         self.target_net = InteractionNetwork(n_objects, object_dim, n_relations, effect_dim, nr_class_actions).to(device)
         self.target_net.load_state_dict(self.policy_net.state_dict())
         self.target_net.eval()
-        self.optimizer = optim.RMSprop(self.policy_net.parameters())        
+        self.optimizer = optim.RMSprop(self.policy_net.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)        
 
     def decide_action(self):                
         self.state = torch.tensor(perception(self.group), device=device, dtype=torch.float)         
@@ -111,11 +103,10 @@ class GraphMind(MemoryGraphMind):
         eps_threshold = EPS_END + (EPS_START - EPS_END) * \
             math.exp(-1. * self.owner.age / EPS_DECAY)        
         if sample > eps_threshold:            
-            # exploitation
             with torch.no_grad():
                 # t.max(1) will return largest column value of each row.
                 # second column on max result is index of where max element was
-                # found, so we pick action with the larger expected reward.                
+                # found, so we pick action with the largest expected reward.                
                 RS = sender_relations.expand(1, -1 , -1)           
                 RR = receiver_relations.expand(1, -1 , -1) 
                 X = self.state.expand(1, -1, -1)
@@ -124,18 +115,25 @@ class GraphMind(MemoryGraphMind):
                 self.action = predicted.argmax().expand(1)                 
                 target_nr, action_nr = divmod(int(self.action), nr_class_actions) 
                 action_code = [ACTIONS[action_nr], target_nr]                
-                action = get_action(action_code, self.owner)                  
+                action = get_action(action_code, self.owner)
+
+                if (self.owner.id == 0):
+                    print("predicted=", predicted)                       
         else:
-            # exploration
             nr_hvs = self.group.nr_hvs()
             target_nr, action_nr = random.randrange(0, nr_hvs), random.randrange(0, nr_class_actions)
-            self.action = torch.tensor([target_nr*nr_hvs + action_nr], device=device, dtype=torch.int64)
+            self.action = torch.tensor([target_nr*nr_class_actions + action_nr], device=device, dtype=torch.int64)
             action_code = [ACTIONS[action_nr], target_nr]            
-            action = get_action(action_code, self.owner)              
+            action = get_action(action_code, self.owner)    
         self.reward = torch.tensor([action.reward], device=device, dtype=torch.float) 
+        if (self.owner.id == 0):
+            print('reward=', self.reward)
+            print("action (self)=", action, self.action)   
         return action
 
 class GraphDQLMind(GraphMind):
+    ''' Mind based on DQL (https://pytorch.org/tutorials/intermediate/reinforcement_q_learning.html)
+        with a state defined by the interaction network.'''
     def optimize_mind(self):
         if len(self.memory) < BATCH_SIZE:
             return
@@ -158,20 +156,11 @@ class GraphDQLMind(GraphMind):
         # columns of actions taken. These are the actions which would've been taken
         # for each batch state according to policy_net
         
-        # print('sb=', state_batch.shape)
-        # print('actb=', action_batch)
-        
         predicted = self.policy_net(state_batch, RS, RR)        
-
-        # print('pred=', predicted.shape)
-        # print('pview=', predicted.view(BATCH_SIZE, -1).shape)
 
         # Flatten O[Do, Np] to pick the action (one-index)
         state_action_values = predicted.view(BATCH_SIZE, -1).gather(1, action_batch)
-        
-        # print('sact=', state_action_values)
-        # print('===============')
-        
+
         # Compute V(s_{t+1}) for all next states.
         # Expected values of actions are computed based
         # on the "older" target_net; selecting their best reward.
@@ -183,15 +172,21 @@ class GraphDQLMind(GraphMind):
         # Compute the expected Q values
         expected_state_action_values = (next_state_values * GAMMA) + reward_batch   
 
-        # print(state_batch.size(), ' ', RS.size(), ' ', RR.size())
-        # print('predicted=', predicted)
-        # print('state=', state_action_values)
-        # print('expected=', expected_state_action_values)
-        # print('reward=', reward_batch)
         # # Compute Huber loss
         criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values)
-        #print(loss)
+        if (self.owner.id == 0): # imortal hv for test
+            print(state_batch.size(), ' ', RS.size(), ' ', RR.size())
+            print('state_batch=', state_batch)
+            print('next_state_batch=', next_state_batch)
+            print('predicted=', predicted)
+            print('predicted_target=', predicted_target)
+            print('state=', state_action_values)
+            print('expected=', next_state_values)
+            print('expected cum=', expected_state_action_values)
+            print('action_batch=', action_batch)
+            print('reward=', reward_batch)
+            print('loss=', loss)
 
         # Optimize the model
         self.optimizer.zero_grad()
@@ -203,11 +198,4 @@ class GraphDQLMind(GraphMind):
         # Update the target network, copying all weights and biases in DQN
         if self.owner.age % TARGET_UPDATE == 0:
             self.target_net.load_state_dict(self.policy_net.state_dict())
-
-
-        
-        
-
-
-
 

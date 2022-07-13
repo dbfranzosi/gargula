@@ -1,23 +1,23 @@
 import numpy as np
+import copy
 from .genes import Genes
 from .mind.mind import *
 from .visible import Visible
 from .actions import Rest
 from settings import *
 from .history import HvHistory
+import time
 
-id_last = 0
 
 class Hv:
         
-    def __init__(self, group=None, haploid_father=None, haploid_mother=None, energy = 0.0, generation=1, name=''):
+    def __init__(self, group, haploid_father=None, haploid_mother=None, energy = 0.0, generation=1, name=''):        
 
-        global id_last
-        self.id = id_last
-        id_last += 1
         self.group = group
+        self.id = group.id_last
+        self.group.id_last += 1
         group.hvs[self.id] = self          
-        self.genes = Genes(haploid_father,haploid_mother)         
+        self.genes = Genes(group.biology, haploid_father, haploid_mother)         
         self.pregnant=0 
         self.age=0    
         self.generation = generation             
@@ -30,12 +30,8 @@ class Hv:
         self.visible = Visible(self)                
         self.action = Rest(self) 
 
-        #self.mind = PonderMind(self, group)         
-        #self.mind = MemoryGraphMind(self, 1000)
-        #self.mind = GraphMind(self, 1000)
-        self.mind = GraphDQLMind(self, 1000)
-
-        self.history = HvHistory(self, 200)
+        self.mind = GraphDQLMind(self, memory_capacity=1000)
+        self.history = HvHistory(self, capacity=1000)
 
     def act(self):
         self.action = self.mind.decide_action()        
@@ -57,8 +53,8 @@ class Hv:
     
     def death(self):
         if (self.energy<0):
-            #print('=== Someone Died.')
-            #self.visualize()
+            # save importat info of history
+            self.history.save()
             del self.group.hvs[self.id]                                    
 
     def make_baby(self, mother):
@@ -70,13 +66,12 @@ class Hv:
         baby = Hv(group=self.group, name=baby_name, haploid_father=haploid_father, 
                 haploid_mother=haploid_mother, energy=5*UNIT_ENERGY, generation=generation) 
         baby.parents = [self.id, mother.id]
-        #baby.mind = MemoryGraphMind(baby, 1000)
+        # baby.mind = MemoryGraphMind(baby, 1000)
         mother.pregnant += 1
 
-        #print('=== A baby was born!')
-        #self.visualize(show_genes=True)
-        #mother.visualize(show_genes=True)
-        #baby.visualize(show_genes=True)
+        # Primitive version of teaching (copy father's mind)
+        baby.mind = copy.copy(self.mind)
+        baby.mind.owner = baby
 
         return baby
 
@@ -91,10 +86,7 @@ class Hv:
             str += f'\n{self.visible.features}\n'    
         return str
         
-        
     def get_genes(self):
         return self.genes.sequence[0]+self.genes.sequence[1]
-
-        
 
     

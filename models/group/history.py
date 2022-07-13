@@ -1,6 +1,7 @@
 from settings import *
 from collections import namedtuple, deque
 import pandas as pd
+from os.path import exists
 #import h5py
 
 Indicators = namedtuple('Indicators',
@@ -8,7 +9,7 @@ Indicators = namedtuple('Indicators',
 
 class GroupHistory:
 
-    def __init__(self, owner, capacity):
+    def __init__(self, owner, capacity=100):
         self.memory = deque([], maxlen=capacity)
         self.owner = owner
         self.capacity = capacity
@@ -25,12 +26,6 @@ class GroupHistory:
                 
         indicators = Indicators(*zip(*indicators))        
         length = indicators.__len__()        
-
-        # print('ind=',indicators)       
-        # print('ind_dict=', indicators._asdict())
-        # for name, value in indicators._asdict().items():
-        #     print('name=', name)
-        #     print('valeu=', value)
         
         val = np.array(indicators.genes)        
         val = np.transpose(val)         
@@ -66,17 +61,16 @@ class GroupHistory:
 
     def to_df(self):
         y_gen, y_traits, y_actions = self.get_indicators()        
-        return pd.DataFrame(y_gen), pd.DataFrame(y_traits), pd.DataFrame(y_actions)        
+        df = pd.concat([pd.DataFrame(y_gen), pd.DataFrame(y_traits), pd.DataFrame(y_actions)], axis=1)
+        return df
 
     def save(self, header=False): 
-        df_gen, df_traits, df_actions = self.to_df()
+        df = self.to_df()
 
-        with open('./data/'+self.owner.name+'_genes.csv', 'a') as f:
-            df_gen.to_csv(f, mode='a', index=False, header=header)
-        with open('./data/'+self.owner.name+'_traits.csv', 'a') as f:
-            df_traits.to_csv(f, mode='a', index=False, header=header)
-        with open('./data/'+self.owner.name+'_actions.csv', 'a') as f:
-            df_actions.to_csv(f, mode='a', index=False, header=header)
+        with open(f'./data/history/{self.owner.name}.csv', 'a') as f:
+            df.to_csv(f, mode='a', index=False, header=header)
+
+
         
 
     

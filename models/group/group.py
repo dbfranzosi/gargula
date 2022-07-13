@@ -1,10 +1,13 @@
 from settings import *
 import numpy as np
 from models.hv.hv import Hv
+from reality.biology import biology
 from reality.geography import eden
 import random
 from .history import *
 import pandas as pd
+import pickle
+import time
 
 class Group:
     '''
@@ -13,13 +16,15 @@ class Group:
     
     def __init__(self, id=0, name='', home=None, hvs={}):
         self.id = id
+        self.id_last = 0 # id of last hv +1
         self.name = name
         self.home = home
         if home:
             home.groups[id] = self
         self.hvs = hvs
-        self.history = GroupHistory(self, 100)
-
+        self.biology = biology
+        self.history = GroupHistory(self, capacity=100)
+    
     def nr_hvs(self):
         return len(self.hvs)  
     
@@ -29,7 +34,7 @@ class Group:
     def extinction(self):
         if (self.nr_hvs() <= 0):
             print('A group was extinct.')
-            self.visualize()
+            print(self.get_info())
             del self.home.groups[self.id]
 
     def check_deaths(self):
@@ -41,8 +46,8 @@ class Group:
     def interact(self):
         hv_keys = list(self.hvs.keys()) # fix to avoid change in the loop        
         random.shuffle(hv_keys) # random initiative            
-        for ihv in hv_keys: 
-            hv = self.hvs[ihv]
+        for ihv in hv_keys:             
+            hv = self.hvs[ihv]            
             hv.act()
             hv.aging()
             hv.history.update()
@@ -55,8 +60,11 @@ class Group:
             name = lst_names[id] if id<len(lst_names) else f'HV_{id}' 
             haploid_father = rng.integers(0, 2, size=GEN_SIZE)
             haploid_mother = rng.integers(0, 2, size=GEN_SIZE)
-            hv = Hv(group=self, name=name, haploid_father=haploid_father, haploid_mother=haploid_mother)
-            hv.age = 50 # all adults 
+            hv = Hv(group=self, name=name, haploid_father=haploid_father, haploid_mother=haploid_mother)            
+            # make id=0 imortal for test purpose
+            # if (id == 0):
+            #     hv.genes.phenotype.traits['energy_pool'] = 100000.
+            #     hv.energy = 100000.
 
     def get_info(self):
         str_hvs = ', '.join([hv.name for hv in self.hvs.values()])        
@@ -114,15 +122,45 @@ class Group:
                 if (hv.parents[1] in hvids):      
                     family.append({'data': {'source': hvid, 'target': hv.parents[1], 'role': 'mother'}})          
         return family
+    
+    def add_hv(self, hv):                       
+        hv.group = self
+        hv.id = self.id_last
+        self.hvs[hv.id] = hv
+        self.id_last += 1 
 
     def save(self):
-        pass
-    def load(self):
-        pass     
+        filename = f'./data/groups/{self.name}.pickle'
+        with open(filename, 'wb') as f:
+            pickle.dump(self, f, pickle.HIGHEST_PROTOCOL)
 
-gargalo = Group(name='Gargalo6', home=eden)
-gargalo.generate_gargalo()
-#conception = Group(name='Conception')
+    def load(self, name):
+        filename = f'./data/groups/{name}.pickle'
+        with open(filename, 'rb') as f:
+            self = pickle.load(f)     
+        return self
+    
+    def merge(self, name):
+        filename = f'./data/groups/{name}.pickle'
+        with open(filename, 'rb') as f:
+            group_add = pickle.load(f)             
+            if (self.biology == group_add.biology):
+                for hv in group_add.hvs.values():
+                    self.add_hv(hv)
+                    hv.name = name + hv.name                    
+
+                return self, True
+            else:
+                return self, False
+
+    def clean(self):
+        self = Group(name='Gargalo', home=eden)
+        return self
+
+
+gargalo = Group(name='Gargalo', home=eden)
+# gargalo.generate_gargalo()
+# conception = Group(name='Conception')
 
 
 
