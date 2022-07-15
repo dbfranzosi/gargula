@@ -499,7 +499,7 @@ def update_hv_panel(hv_sel):
     lst_ids = gargalo.get_list_ids()   
     # add list of hv to info
     info_hv = 'This homo-virtualis is not in the group.'
-    fig_hv = make_subplots(rows=2, cols=2, 
+    fig_hv = make_subplots(rows=3, cols=2, 
                     subplot_titles=["gen values", "trait values", "Rewards", "Nr of actions"])     
     
     #print('hv_sel=', hv_sel)  
@@ -508,13 +508,14 @@ def update_hv_panel(hv_sel):
         info_hv = hv.get_info(show_genes=False, show_action=True, show_visible=False)        
         genes = hv.get_genes()
         traits = hv.genes.phenotype.traits
-        y_actions, y_reward = hv.history.get_indicators()
+        y_actions, y_action_name, y_reward, y_power, y_resistance = hv.history.get_indicators()
         
         fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
         fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)        
         fig_hv.add_trace(go.Scatter(y=y_reward, mode="lines", showlegend=False), row=2, col=1)    
         for action in ACTIONS:                 
             fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)    
+        fig_hv.add_trace(go.Scatter(x=y_resistance, y=y_reward, mode="markers", showlegend=False), row=3, col=1)    
 
     fig_hv.update_layout(
     autosize=False,

@@ -57,6 +57,24 @@ class TargetedAction(Action):
         super().__init__(owner, conditions=conditions, energy_cost= energy_cost, description = description)
         self.target = target
 
+class ResistedAction(TargetedAction):
+    def __init__(self, owner, target, power = 1., resistance = 0., conditions = True, energy_cost = UNIT_ENERGY, description = 'Resisted action.'):
+        super().__init__(owner, target, conditions=conditions, energy_cost= energy_cost, description = description)
+        self.target = target
+        self.resistance = resistance
+        self.power = power
+
+    def achieve(self):
+        if (self.owner != self.target):
+            hit = (self.power - self.resistance)/(self.power + self.resistance)
+            #if hit > 2*np.random.random()-1.0:
+            if hit > 0.: #deterministic for test
+                return True
+            else:
+                return False
+        else:
+            return False
+
 class Rest(Action):
     def __init__(self, owner):
         super().__init__(owner)
@@ -81,58 +99,63 @@ class Eat(Action):
         #self.reward = self.owner.genes.phenotype.traits['reward_eat']*amount/UNIT_ENERGY
         self.reward = self.owner.genes.phenotype.traits['reward_eat']
         
-class TrySex(TargetedAction):
+class TrySex(ResistedAction):
     def __init__(self, owner, target):        
+        super().__init__(owner, target)  
+        self.power = owner.genes.phenotype.traits['power_attack']
+        self.resistance = target.genes.phenotype.traits['resistance_attack']
 
-        conditions = (target.pregnant == 0 and owner.pregnant == 0)
-        conditions = conditions and (owner != target)
-        conditions = conditions and target.mind.decide_passive("accept_sex", owner)  
-        conditions = conditions and (owner.group.nr_hvs() < MAX_HVS_IN_GROUP)      
+        self.conditions = (target.pregnant == 0 and owner.pregnant == 0)
+        self.conditions = self.conditions and (owner != target)
+        # mind based passive decision
+        # conditions = conditions and target.mind.decide_passive("accept_sex", owner)  
+        # passive resistance
+        self.conditions = self.conditions and self.achieve()
+        self.conditions = self.conditions and (owner.group.nr_hvs() < MAX_HVS_IN_GROUP)      
 
-        super().__init__(owner, target, conditions=conditions)  
         self.name = 'try_sex'
-        self.reward = self.owner.genes.phenotype.traits['reward_sex']*10 
+        self.reward = self.owner.genes.phenotype.traits['reward_sex']
                 
         if owner == target:
             self.description = f'{owner.name} is touching hemself! (hem=him/her)'
             #self.reward = self.reward*0.1                 
+            self.reward = 0.0
         else:
             self.description = f'{owner.name} is naked with {target.name}!'
             self.energy_cost *= 2
-            #self.reward = self.reward*2
-        if conditions:            
-            self.description += f' They love each other!'
-            self.energy_cost *= 3
-            #self.reward = self.reward*10
 
+        if self.conditions:            
+            self.description += f' They love each other!'            
+            self.reward = self.reward*3
+        else:
+            self.reward = 0.0
+            
     def effects(self):
         super().effects()
         if self.conditions:            
             baby = self.owner.make_baby(self.target)
 
-class Attack(TargetedAction):
+class Attack(ResistedAction):
     def __init__(self, owner, target):              
-        # probabilistic based on attack/resistance        
-        if owner != target:
-            hit = (owner.genes.phenotype.traits['power_attack'] - target.genes.phenotype.traits['resistance_attack'])/ \
-                    (owner.genes.phenotype.traits['power_attack'] + target.genes.phenotype.traits['resistance_attack'])
-            if hit > 2*np.random.random()-1.0:
-                conditions = True
-            else:
-                conditions = False
-        else:
-            conditions = False
+        super().__init__(owner, target)        
+        self.power = owner.genes.phenotype.traits['power_attack']
+        self.resistance = target.genes.phenotype.traits['resistance_attack']
 
-        super().__init__(owner, target, conditions=conditions)        
+        self.conditions = self.achieve()
+
         self.reward = self.owner.genes.phenotype.traits['reward_violence']
         self.description = f'{owner.name} tried to hit {target.name}.'                
         self.name = 'attack'
-        if conditions:
+        if self.conditions:
+            self.reward = self.reward*3
             self.description += f' And did it!'
+        else:
+            #self.reward = self.reward*0.5
+            self.reward = 0.0
 
     def effects(self):
         super().effects()
-        damage = max(1.0, self.owner.genes.phenotype.traits['power_attack'] - self.target.genes.phenotype.traits['resistance_attack'])
+        damage = max(1.0, self.power - self.resistance)
         if self.conditions:            
             #self.target.energy -= self.owner.genes.phenotype.traits['power_attack']*UNIT_ENERGY
             self.target.energy -= damage*UNIT_ENERGY

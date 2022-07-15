@@ -10,6 +10,7 @@ app.layout = html.Div([
                 dbc.NavItem(dbc.NavLink("Home", href=app.get_relative_path("/"))),
                 dbc.NavItem(dbc.NavLink("Gargula", href=app.get_relative_path("/gargula"))),
                 dbc.NavItem(dbc.NavLink("Coruja", href=app.get_relative_path("/coruja"))),
+                dbc.NavItem(dbc.NavLink("Info", href=app.get_relative_path("/info"))),
             ]
         ),
 	dash.page_container

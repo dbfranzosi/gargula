@@ -144,3 +144,14 @@ def create_group(n, name, nr, bio):
     # Info    
     info_group = 'Created '+gargalo.get_info()
     return info_group
+
+
+    def get_action(self):
+        if (hasattr(self.owner.action, 'power') and hasattr(self.owner.action, 'resistance')):
+            power = self.owner.action.power
+            resistance = self.owner.action.resistance
+        else:
+            power = None
+            resistance = None
+
+        return (self.owner.action.name, self.owner.action.reward, power, resistance)
