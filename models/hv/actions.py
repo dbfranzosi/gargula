@@ -104,14 +104,12 @@ class TrySex(ResistedAction):
         super().__init__(owner, target)  
         self.power = owner.genes.phenotype.traits['power_attack']
         self.resistance = target.genes.phenotype.traits['resistance_attack']
-
-        self.conditions = (target.pregnant == 0 and owner.pregnant == 0)
+        
         self.conditions = self.conditions and (owner != target)
         # mind based passive decision
         # conditions = conditions and target.mind.decide_passive("accept_sex", owner)  
         # passive resistance
         self.conditions = self.conditions and self.achieve()
-        self.conditions = self.conditions and (owner.group.nr_hvs() < MAX_HVS_IN_GROUP)      
 
         self.name = 'try_sex'
         self.reward = self.owner.genes.phenotype.traits['reward_sex']
@@ -119,21 +117,23 @@ class TrySex(ResistedAction):
         if owner == target:
             self.description = f'{owner.name} is touching hemself! (hem=him/her)'
             #self.reward = self.reward*0.1                 
-            self.reward = 0.0
+            #self.reward = 0.0
         else:
             self.description = f'{owner.name} is naked with {target.name}!'
-            self.energy_cost *= 2
+            self.energy_cost *= 2            
 
         if self.conditions:            
             self.description += f' They love each other!'            
-            self.reward = self.reward*3
+            self.reward = self.reward*15
         else:
-            self.reward = 0.0
+            # pass
+            self.reward = self.reward*2
             
     def effects(self):
         super().effects()
-        if self.conditions:            
-            baby = self.owner.make_baby(self.target)
+        if self.conditions:
+            if (self.target.pregnant == 0 and self.owner.pregnant == 0) and (self.owner.group.nr_hvs() < MAX_HVS_IN_GROUP):            
+                baby = self.owner.make_baby(self.target)
 
 class Attack(ResistedAction):
     def __init__(self, owner, target):              
@@ -147,11 +147,12 @@ class Attack(ResistedAction):
         self.description = f'{owner.name} tried to hit {target.name}.'                
         self.name = 'attack'
         if self.conditions:
-            self.reward = self.reward*3
+            self.reward = self.reward*8
             self.description += f' And did it!'
         else:
+            pass
             #self.reward = self.reward*0.5
-            self.reward = 0.0
+            #self.reward = 0.0
 
     def effects(self):
         super().effects()

@@ -376,7 +376,8 @@ def control_sim(n_run, n_sim):
         saving = True
         biology.save()
         eden.save()
-        gargalo.save()            
+        gargalo.save()    
+        gargalo.write_histories()
         saving = False
 
         lst_groups = listdir('./data/groups/')
@@ -508,14 +509,15 @@ def update_hv_panel(hv_sel):
         info_hv = hv.get_info(show_genes=False, show_action=True, show_visible=False)        
         genes = hv.get_genes()
         traits = hv.genes.phenotype.traits
-        y_actions, y_action_name, y_reward, y_power, y_resistance = hv.history.get_indicators()
+        indicators = hv.history.get_indicators()
+        y_actions = hv.history.get_counter()
         
         fig_hv.add_trace(go.Bar(y=genes, showlegend=False), row=1, col=1)
         fig_hv.add_trace(go.Bar(x=list(traits.values()), y=list(traits.keys()), showlegend=False, orientation='h'), row=1, col=2)        
-        fig_hv.add_trace(go.Scatter(y=y_reward, mode="lines", showlegend=False), row=2, col=1)    
+        fig_hv.add_trace(go.Scatter(y=indicators.reward, mode="lines", showlegend=False), row=2, col=1)    
         for action in ACTIONS:                 
             fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)    
-        fig_hv.add_trace(go.Scatter(x=y_resistance, y=y_reward, mode="markers", showlegend=False), row=3, col=1)    
+        fig_hv.add_trace(go.Scatter(x=indicators.resistance, y=indicators.reward, mode="markers", showlegend=False), row=3, col=1)    
 
     fig_hv.update_layout(
     autosize=False,

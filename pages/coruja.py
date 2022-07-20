@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
 from settings import *
-from analytics.group_analysis import *
+from analytics.group_analysis import load_history, load_hvs
 
 import pandas as pd
 pd.options.plotting.backend = "plotly"

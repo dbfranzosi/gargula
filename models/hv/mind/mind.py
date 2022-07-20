@@ -67,6 +67,8 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 from torch.utils.data import Dataset, DataLoader
 
+debug = False
+
 class MemoryGraphMind(PonderMind):
     def __init__(self, owner, memory_capacity):
         super().__init__(owner)
@@ -117,7 +119,7 @@ class GraphMind(MemoryGraphMind):
                 action_code = [ACTIONS[action_nr], target_nr]                
                 action = get_action(action_code, self.owner)
 
-                if (self.owner.id == 0):
+                if (self.owner.id == 0 and debug):
                     print("predicted=", predicted)                       
         else:
             nr_hvs = self.group.nr_hvs()
@@ -126,7 +128,7 @@ class GraphMind(MemoryGraphMind):
             action_code = [ACTIONS[action_nr], target_nr]            
             action = get_action(action_code, self.owner)    
         self.reward = torch.tensor([action.reward], device=device, dtype=torch.float) 
-        if (self.owner.id == 0):
+        if (self.owner.id == 0 and debug):
             print('reward=', self.reward)
             print("action (self)=", action, self.action)   
         return action
@@ -175,7 +177,7 @@ class GraphDQLMind(GraphMind):
         # # Compute Huber loss
         criterion = nn.SmoothL1Loss()
         loss = criterion(state_action_values, expected_state_action_values)
-        if (self.owner.id == 0): # imortal hv for test
+        if (self.owner.id == 0 and debug): 
             print(state_batch.size(), ' ', RS.size(), ' ', RR.size())
             print('state_batch=', state_batch)
             print('next_state_batch=', next_state_batch)

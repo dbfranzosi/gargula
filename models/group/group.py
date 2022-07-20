@@ -8,6 +8,7 @@ from .history import *
 import pandas as pd
 import pickle
 import time
+import os
 
 class Group:
     '''
@@ -155,7 +156,54 @@ class Group:
 
     def clean(self):
         self = Group(name='Gargalo', home=eden)
+        os.remove(f'./data/history/tmp.csv')
+        os.remove(f'./data/history/tmp_hvs.csv')
         return self
+
+    def write_histories(self):
+
+        with open(f'./data/history/{self.name}.csv', 'a') as fout:
+            str_tmp = f'./data/history/tmp.csv'
+            if os.path.exists(str_tmp):
+                fin = open(str_tmp, "r")
+                data = fin.read()
+                fin.close()                
+                fout.write(data)
+                os.remove(str_tmp)
+
+        with open(f'./data/history/{self.name}_hvs.csv', 'a') as fout:
+            str_tmp = f'./data/history/tmp_hvs.csv'
+            if os.path.exists(str_tmp):
+                fin = open(str_tmp, "r")
+                data = fin.read()
+                fin.close()                
+                fout.write(data)
+                os.remove(str_tmp)
+
+        with open(f'./data/history/{self.name}_info_hvs.csv', 'a') as fout:
+            str_tmp = f'./data/history/tmp_info_hvs.csv'
+            if os.path.exists(str_tmp):
+                fin = open(str_tmp, "r")
+                data = fin.read()
+                fin.close()                
+                fout.write(data)
+                os.remove(str_tmp)
+
+    def load_history(self):
+        with open(f'./data/history/{self.name}.csv', 'r') as fin:
+            df = pd.read_csv(fin, header=None)
+            
+        with open(f'./data/history/{self.name}_hvs.csv', 'r') as fin:
+            df_hvs = pd.read_csv(fin, index_col=[0,1], names=['HV','Profile']+list(range(2000)), header=None)
+            df_hvs = df.T
+        
+        with open(f'./data/history/{self.name}_info_hvs.csv', 'r') as fin:
+            columns = TRAITS + ['birth', 'age']
+            df_info_hvs = pd.read_csv(fin, index_col=0, names=columns, header=None)
+
+        return df, df_hvs, df_info_hvs
+
+
 
 
 gargalo = Group(name='Gargalo', home=eden)

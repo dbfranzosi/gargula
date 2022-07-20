@@ -7,6 +7,7 @@ from .actions import Rest
 from settings import *
 from .history import HvHistory
 import time
+import pandas as pd
 
 
 class Hv:
@@ -20,7 +21,8 @@ class Hv:
         self.genes = Genes(group.biology, haploid_father, haploid_mother)         
         self.pregnant=0 
         self.age=0    
-        self.generation = generation             
+        self.generation = generation   
+        self.birth = self.group.home.clock          
         if energy==0.0:
             self.energy = self.genes.phenotype.traits['energy_pool']
         else:
@@ -31,7 +33,7 @@ class Hv:
         self.action = Rest(self) 
 
         self.mind = GraphDQLMind(self, memory_capacity=1000)
-        self.history = HvHistory(self, capacity=1000)
+        self.history = HvHistory(self, capacity=3000)
 
     def act(self):
         self.action = self.mind.decide_action()        
@@ -53,8 +55,10 @@ class Hv:
     
     def death(self):
         if (self.energy<0):
-            # save importat info of history
-            self.history.save()
+            # save importat info of history if it has a relevant history
+            if self.age > 200:
+                self.history.save()
+                self.save_df()
             del self.group.hvs[self.id]                                    
 
     def make_baby(self, mother):
@@ -88,5 +92,20 @@ class Hv:
         
     def get_genes(self):
         return self.genes.sequence[0]+self.genes.sequence[1]
+
+    def to_df(self):        
+        info = (self.genes.phenotype.traits).copy()
+        info['birth'] = self.birth
+        info['age'] = self.age         
+        df = pd.DataFrame(data=info, index=[self.id])        
+        
+        return df
+
+    def save_df(self, header=False): 
+        df = self.to_df()
+
+        # with open(f'./data/history/{self.owner.group.name}_hvs.csv', 'a') as f:
+        with open(f'./data/history/tmp_info_hvs.csv', 'a') as f:
+            df.to_csv(f, mode='a', header=header)
 
     
