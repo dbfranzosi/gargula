@@ -68,7 +68,9 @@ class Hv:
         generation = max(self.generation, mother.generation) + 1 
         baby_name = f'{mother.name.split()[0]} {generation}'
         baby = Hv(group=self.group, name=baby_name, haploid_father=haploid_father, 
-                haploid_mother=haploid_mother, energy=5*UNIT_ENERGY, generation=generation) 
+                haploid_mother=haploid_mother, energy=UNIT_ENERGY, generation=generation) 
+        #baby.energy = min(50*UNIT_ENERGY, baby.genes.phenotype.traits['energy_pool'])
+        baby.energy = baby.genes.phenotype.traits['energy_pool']/5
         baby.parents = [self.id, mother.id]
         # baby.mind = MemoryGraphMind(baby, 1000)
         mother.pregnant += 1

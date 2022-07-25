@@ -73,7 +73,7 @@ class Group:
     
     def get_features(self):        
         return pd.DataFrame.from_dict({hv.id : hv.visible.features for hv in self.hvs.values()}, orient='index', columns=FEATURES)
-
+    
     def get_traits(self):
         traits_dict = dict.fromkeys(TRAITS)        
         k, v = self.hvs.keys(), self.hvs.values()        
@@ -96,8 +96,10 @@ class Group:
         
         traits = self.get_traits()
         actions = self.get_actions()
+
+        extra = pd.DataFrame.from_dict({hv.id : [hv.age] for hv in self.hvs.values()}, orient='index', columns=['age'])
                
-        profile = pd.concat([profile, traits, actions], axis=1)    
+        profile = pd.concat([extra, profile, traits, actions], axis=1)    
         return profile
 
     def get_family(self):        

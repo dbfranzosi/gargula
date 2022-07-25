@@ -1,20 +1,20 @@
 from settings import *
 
-nr_targeted_actions = 2 # try_sex
+nr_targeted_actions = 2 # sex
 nr_nontarg_actions = 2 # eat, rest
 nr_class_actions = nr_targeted_actions + nr_nontarg_actions
 nr_actions = MAX_HVS_IN_GROUP*nr_targeted_actions + nr_nontarg_actions
 lst_actions = {}
 
 for i in range(MAX_HVS_IN_GROUP):
-    lst_actions[i] = ['try_sex', i]
+    lst_actions[i] = ['sex', i]
 for i in range(MAX_HVS_IN_GROUP, 2*MAX_HVS_IN_GROUP):
     lst_actions[i] = ['attack', i] 
 
 lst_actions[nr_targeted_actions*MAX_HVS_IN_GROUP + nr_nontarg_actions -2] = ['eat', -1] 
 lst_actions[nr_targeted_actions*MAX_HVS_IN_GROUP + nr_nontarg_actions -1] = ['rest', -1] # rest is always the last action
 
-#ACTIONS = ['try_sex', 'attack', 'eat', 'rest'] #defined in settings
+#ACTIONS = ['sex', 'attack', 'eat', 'rest'] #defined in settings
 
 # Passive actions return a boolean
 lst_passive_actions = {}
@@ -26,7 +26,7 @@ def get_action(code, owner):
     hvs_keys = list(group.hvs.keys())
     if (code[1] >= len(hvs_keys)): # target doesn't exist
         return Rest(owner)
-    if code[0] == 'try_sex':   
+    if code[0] == 'sex':   
         itarget = hvs_keys[code[1]]     
         return TrySex(owner, group.hvs[itarget])
     if code[0] == 'attack':   
@@ -111,7 +111,7 @@ class TrySex(ResistedAction):
         # passive resistance
         self.conditions = self.conditions and self.achieve()
 
-        self.name = 'try_sex'
+        self.name = 'sex'
         self.reward = self.owner.genes.phenotype.traits['reward_sex']
                 
         if owner == target:
@@ -124,10 +124,10 @@ class TrySex(ResistedAction):
 
         if self.conditions:            
             self.description += f' They love each other!'            
-            self.reward = self.reward*15
+            self.reward = self.reward*4
         else:
             # pass
-            self.reward = self.reward*2
+            self.reward = self.reward*0.5
             
     def effects(self):
         super().effects()
@@ -147,11 +147,10 @@ class Attack(ResistedAction):
         self.description = f'{owner.name} tried to hit {target.name}.'                
         self.name = 'attack'
         if self.conditions:
-            self.reward = self.reward*8
+            self.reward = self.reward*4
             self.description += f' And did it!'
-        else:
-            pass
-            #self.reward = self.reward*0.5
+        else:            
+            self.reward = self.reward*0.5
             #self.reward = 0.0
 
     def effects(self):

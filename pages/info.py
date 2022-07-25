@@ -17,16 +17,19 @@ layout = html.Div([
     * Each HV has a **genetics** which determines its **phenotype**.
     * Each HV has a **mind** that is used to decide **actions**.
     * Mind's **memories** are based on an interaction network [1].
-    * Decision policy is based on a Deep Q Learning [2] algorithm.
+    * Decision policy is based on a Deep Reinforcement Learning (DRL) [2] algorithm. 
+    * Learning happens during HV life span with DRL and by other HVs teachings.
 
     #### Bibliography
 
-    * [1] IN
-    * [2] DQL
+    * [1] Peter W. Battaglia, Razvan Pascanu, Matthew Lai, Danilo Rezende, Koray Kavukcuoglu, Interaction Networks for Learning about Objects, Relations and Physics,  [arXiv:1612.00222], 
+        Eric A. Moreno, Olmo Cerri, Javier M. Duarte, Harvey B. Newman, Thong Q. Nguyen, Avikar Periwal, Maurizio Pierini, Aidana Serikova, Maria Spiropulu, Jean-Roch Vlimant, JEDI-net: a jet identification algorithm based on interaction networks [arXiv:1908.05318]
+    * [2] Volodymyr Mnih, Koray Kavukcuoglu, David Silver, Alex Graves, Ioannis Antonoglou, Daan Wierstra, Martin Riedmiller, Playing Atari with Deep Reinforcement Learning, arXiv:1312.5602
 
     # Coruja
 
-    Coruja means owl. It provides tools for the analysis of historical data from Gargula simulations.
+    Coruja provides tools for the analysis of historical data from Gargula simulations.
 
+    
     ''')
 ])

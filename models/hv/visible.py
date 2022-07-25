@@ -4,7 +4,9 @@
 class Visible:
     def get_features(self, owner):
         traits = owner.genes.phenotype.traits
-        return [owner.pregnant, owner.age, owner.energy, traits['energy_pool'], traits['power_attack'], 
+        # return [owner.pregnant, owner.age, owner.energy, traits['energy_pool'], traits['power_attack'], 
+        #     traits['resistance_attack'], traits['feature1']]        
+        return [owner.energy, traits['energy_pool'], traits['power_attack'], 
             traits['resistance_attack'], traits['feature1']]        
 
     def __init__(self, owner):
