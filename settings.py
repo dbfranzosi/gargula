@@ -4,20 +4,21 @@ RANDOM_SEED = 123456
 MAX_DAYS = 1000
 MAX_HVS_IN_GROUP = 50
 GEN_SIZE = 20
-UNIT_ENERGY = 1./GEN_SIZE/100.
+UNIT_ENERGY = 1./GEN_SIZE/1.
 
 # ages
 AGE_BABY = 15
 AGE_ADULT = 100
 AGE_ELDER = 200
 
-FEATURES = ['pregnant', 'age', 'energy', 'energy_pool', 'power_attack', 'resistance_attack', 'feature1']
+#FEATURES = ['pregnant', 'age', 'energy', 'energy_pool', 'power_attack', 'resistance_attack', 'feature1']
+FEATURES = ['energy', 'energy_pool', 'power_attack', 'resistance_attack', 'feature1']
 NR_FEATURES = len(FEATURES) #visible
 
 TRAITS = ['energy_pool','food_consumption','power_attack','resistance_attack',
             'reward_eat','reward_rest','reward_sex','reward_violence','feature1'] 
 
-ACTIONS = ['try_sex', 'attack', 'eat', 'rest']
+ACTIONS = ['sex', 'attack', 'eat', 'rest']
 
 # Training
 LEARNING_RATE = 0.01

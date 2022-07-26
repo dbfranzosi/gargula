@@ -8,6 +8,7 @@ from .history import *
 import pandas as pd
 import pickle
 import time
+import os
 
 class Group:
     '''
@@ -72,7 +73,7 @@ class Group:
     
     def get_features(self):        
         return pd.DataFrame.from_dict({hv.id : hv.visible.features for hv in self.hvs.values()}, orient='index', columns=FEATURES)
-
+    
     def get_traits(self):
         traits_dict = dict.fromkeys(TRAITS)        
         k, v = self.hvs.keys(), self.hvs.values()        
@@ -95,8 +96,10 @@ class Group:
         
         traits = self.get_traits()
         actions = self.get_actions()
+
+        extra = pd.DataFrame.from_dict({hv.id : [hv.age] for hv in self.hvs.values()}, orient='index', columns=['age'])
                
-        profile = pd.concat([profile, traits, actions], axis=1)    
+        profile = pd.concat([extra, profile, traits, actions], axis=1)    
         return profile
 
     def get_family(self):        
@@ -155,7 +158,54 @@ class Group:
 
     def clean(self):
         self = Group(name='Gargalo', home=eden)
+        os.remove(f'./data/history/tmp.csv')
+        os.remove(f'./data/history/tmp_hvs.csv')
         return self
+
+    def write_histories(self):
+
+        with open(f'./data/history/{self.name}.csv', 'a') as fout:
+            str_tmp = f'./data/history/tmp.csv'
+            if os.path.exists(str_tmp):
+                fin = open(str_tmp, "r")
+                data = fin.read()
+                fin.close()                
+                fout.write(data)
+                os.remove(str_tmp)
+
+        with open(f'./data/history/{self.name}_hvs.csv', 'a') as fout:
+            str_tmp = f'./data/history/tmp_hvs.csv'
+            if os.path.exists(str_tmp):
+                fin = open(str_tmp, "r")
+                data = fin.read()
+                fin.close()                
+                fout.write(data)
+                os.remove(str_tmp)
+
+        with open(f'./data/history/{self.name}_info_hvs.csv', 'a') as fout:
+            str_tmp = f'./data/history/tmp_info_hvs.csv'
+            if os.path.exists(str_tmp):
+                fin = open(str_tmp, "r")
+                data = fin.read()
+                fin.close()                
+                fout.write(data)
+                os.remove(str_tmp)
+
+    def load_history(self):
+        with open(f'./data/history/{self.name}.csv', 'r') as fin:
+            df = pd.read_csv(fin, header=None)
+            
+        with open(f'./data/history/{self.name}_hvs.csv', 'r') as fin:
+            df_hvs = pd.read_csv(fin, index_col=[0,1], names=['HV','Profile']+list(range(2000)), header=None)
+            df_hvs = df.T
+        
+        with open(f'./data/history/{self.name}_info_hvs.csv', 'r') as fin:
+            columns = TRAITS + ['birth', 'age']
+            df_info_hvs = pd.read_csv(fin, index_col=0, names=columns, header=None)
+
+        return df, df_hvs, df_info_hvs
+
+
 
 
 gargalo = Group(name='Gargalo', home=eden)

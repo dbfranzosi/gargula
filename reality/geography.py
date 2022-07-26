@@ -56,10 +56,11 @@ class Area:
             group.history.update()
             # Save in csv file
             if (self.clock % group.history.capacity == 0):
-                if (int(self.clock / group.history.capacity) == 1):
-                    group.history.save(header=True)                    
-                else:
-                    group.history.save()      
+                group.history.save()      
+                # if (int(self.clock / group.history.capacity) == 1):
+                #     group.history.save(header=True)                    
+                # else:
+                #     group.history.save()      
 
         return True
     

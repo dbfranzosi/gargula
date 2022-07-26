@@ -25,6 +25,7 @@ class Genes:
                 haploid[var] = int(not (haploid[var] and 1)) # 1 -> 0, 0 -> 1
         return haploid
 
+
 def fertilization(haploid_father, haploid_mother):
         return Genes(haploid_father, haploid_mother)
     
