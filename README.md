@@ -13,9 +13,12 @@
   #### Instructions
     
   * Install all requirements with conda or pip
+
+        pip install -r requirements.txt
+
   * The simulation is controlled and visualized via a Dash/Plotly web app. Run   
 
-        python gargalo_basic/app.py        
+        python app.py        
         
   * Open http://127.0.0.1:8050/ in your browser. 
   * Play with the parameters, create your first group of homo-virtualis and enjoy their evolution.

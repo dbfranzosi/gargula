@@ -2,6 +2,11 @@ from dash import Dash, html, dcc
 import dash
 import dash_bootstrap_components as dbc
 
+# create directories not in repository (from gitignore)
+from pathlib import Path
+Path("./data").mkdir(parents=True, exist_ok=True)
+Path("./analytics/plots").mkdir(parents=True, exist_ok=True)
+
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG], use_pages=True)
 
 app.layout = html.Div([

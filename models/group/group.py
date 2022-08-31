@@ -24,7 +24,7 @@ class Group:
             home.groups[id] = self
         self.hvs = hvs
         self.biology = biology
-        self.history = GroupHistory(self, capacity=100)
+        self.history = GroupHistory(self, capacity=100)        
     
     def nr_hvs(self):
         return len(self.hvs)  

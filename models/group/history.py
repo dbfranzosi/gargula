@@ -71,7 +71,4 @@ class GroupHistory:
         with open(f'./data/history/tmp.csv', 'a') as f:
             df.to_csv(f, mode='a', index=False, header=header)
 
-
-        
-
     
