@@ -5,6 +5,10 @@ import dash_bootstrap_components as dbc
 # create directories not in repository (from gitignore)
 from pathlib import Path
 Path("./data").mkdir(parents=True, exist_ok=True)
+Path("./data/areas").mkdir(parents=True, exist_ok=True)
+Path("./data/biologies").mkdir(parents=True, exist_ok=True)
+Path("./data/groups").mkdir(parents=True, exist_ok=True)
+Path("./data/history").mkdir(parents=True, exist_ok=True)
 Path("./analytics/plots").mkdir(parents=True, exist_ok=True)
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG], use_pages=True)

@@ -1,7 +1,6 @@
 import numpy as np
 import math
 import random
-import networkx as nx
 from ..actions import *
 from ..visible import *
 from settings import *

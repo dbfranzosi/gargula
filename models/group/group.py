@@ -158,8 +158,12 @@ class Group:
 
     def clean(self):
         self = Group(name='Gargalo', home=eden)
-        os.remove(f'./data/history/tmp.csv')
-        os.remove(f'./data/history/tmp_hvs.csv')
+        str_tmp = f'./data/history/tmp.csv'
+        if os.path.exists(str_tmp):
+            os.remove(str_tmp)
+        str_tmp = f'./data/history/tmp_hvs.csv'
+        if os.path.exists(str_tmp):
+            os.remove(str_tmp)
         return self
 
     def write_histories(self):
