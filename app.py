@@ -12,6 +12,7 @@ Path("./data/history").mkdir(parents=True, exist_ok=True)
 Path("./analytics/plots").mkdir(parents=True, exist_ok=True)
 
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG], use_pages=True)
+server = app.server
 
 app.layout = html.Div([
 	 dbc.NavbarSimple(
@@ -25,5 +26,5 @@ app.layout = html.Div([
 	dash.page_container
 ])
 
-if __name__ == '__main__':
-	app.run_server(debug=True)
+#if __name__ == '__main__':
+#	app.run_server(host='0.0.0.0', debug=True, port=8050)
