@@ -2,4 +2,4 @@ data/
 analytics/plots
 notes/
 __pycache__/
-*.pyc
+**/*.pyc
