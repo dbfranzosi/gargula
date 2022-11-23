@@ -2,17 +2,7 @@ from dash import Dash, html, dcc
 import dash
 import dash_bootstrap_components as dbc
 
-# create directories not in repository (from gitignore)
-from pathlib import Path
-Path("./data").mkdir(parents=True, exist_ok=True)
-Path("./data/areas").mkdir(parents=True, exist_ok=True)
-Path("./data/biologies").mkdir(parents=True, exist_ok=True)
-Path("./data/groups").mkdir(parents=True, exist_ok=True)
-Path("./data/history").mkdir(parents=True, exist_ok=True)
-Path("./analytics/plots").mkdir(parents=True, exist_ok=True)
-
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG], use_pages=True)
-server = app.server
 
 app.layout = html.Div([
 	 dbc.NavbarSimple(
@@ -26,5 +16,5 @@ app.layout = html.Div([
 	dash.page_container
 ])
 
-#if __name__ == '__main__':
-#	app.run_server(host='0.0.0.0', debug=True, port=8050)
+if __name__ == '__main__':
+	app.run_server(debug=True)
