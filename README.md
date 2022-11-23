@@ -34,19 +34,20 @@
 
   Coruja provides tools for the analysis of historical data from Gargula simulations. You can open it on the navigation bar on the top.
   
-  * You can choose a saved group and the HVs on the group to see plots of some variables in the group history[^1].
+  * You can choose a saved group and the HVs on the group to see plots of some variables in the group history.
   * You can see if the HVs are evolving via natural selection or if they are learning during their lives and through generations.
   * You can also do your own analysis using the Jupyter notebook 
         ./analytics/tests.ipynb 
-
-  [^1]: For the moment only dead HVs are saved and with a maximum capacity of days. This will be fixed soon.
-
 
   ##### Author: Diogo Buarque Franzosi
 
 
 
   
+
+
+
+https://user-images.githubusercontent.com/11366780/203649262-bd92f828-66a4-469c-bb24-3f82476a5b3d.mp4
 
 
 
