@@ -23,6 +23,8 @@
   * Open http://127.0.0.1:8050/ in your browser. 
   * Play with the parameters, create your first group of homo-virtualis and enjoy their evolution.
 
+  * You can also use Docker: https://hub.docker.com/repository/docker/dbfranzosi/gargula
+
   #### Bibliography
 
   * [1] Peter W. Battaglia, Razvan Pascanu, Matthew Lai, Danilo Rezende, Koray Kavukcuoglu, Interaction Networks for Learning about Objects, Relations and Physics,  [arXiv:1612.00222], Eric A. Moreno, Olmo Cerri, Javier M. Duarte, Harvey B. Newman, Thong Q. Nguyen, Avikar Periwal, Maurizio Pierini, Aidana Serikova, Maria Spiropulu, Jean-Roch Vlimant, JEDI-net: a jet identification algorithm based on interaction networks [arXiv:1908.05318]
