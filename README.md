@@ -16,14 +16,13 @@
 
         pip install -r requirements.txt
 
+  * You can also use Docker: https://hub.docker.com/repository/docker/dbfranzosi/gargula
   * The simulation is controlled and visualized via a Dash/Plotly web app. Run   
 
         python app.py        
         
   * Open http://127.0.0.1:8050/ in your browser. 
   * Play with the parameters, create your first group of homo-virtualis and enjoy their evolution.
-
-  * You can also use Docker: https://hub.docker.com/repository/docker/dbfranzosi/gargula
 
   #### Bibliography
 
