@@ -3,3 +3,5 @@ analytics/plots
 notes/
 __pycache__/
 **/*.pyc
+mylocal_db/
+logfile
