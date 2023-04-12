@@ -178,7 +178,9 @@ family_tree = cyto.Cytoscape(
                     'selector': 'node',
                     'style': {
                         'label': 'data(label)',
-                        'color': 'white'
+                        'color': 'white',
+                        'background-fit': 'cover',
+                        'background-image': 'data(url)'
                     }
                 },
                 {
@@ -196,13 +198,16 @@ family_tree = cyto.Cytoscape(
             ]
         )
 
+
 group_panel = html.Div([
         html.Div(id='info_area'),        
-        html.Div(id='info_group'),   
-        dbc.Row([
-            dbc.Col(dcc.Graph(id='fig_hvs'), width=8),
-            dbc.Col(family_tree, width=4)
-        ]),
+        html.Div(id='info_group'), 
+        family_tree,          
+        # dbc.Row([
+        #     #dbc.Col(dcc.Graph(id='fig_hvs'), width=4),
+        #     dbc.Col(html.Img(id='avatar', width="250px"), width=4),
+        #     dbc.Col(family_tree, width=8)
+        # ]),
         dcc.Graph(id='fig_gene') 
 ], style={"margin-top": "15px", "margin-bottom": "15px"})
 
@@ -390,38 +395,9 @@ def control_sim(n_run, n_sim):
         simulating = True
         return "danger", "Stop Simulation", True, lst_groups
 
-def get_physical_rep(profile):
-    x = profile.index
-    y = profile['age']
-    size =  profile['energy_pool'] * 10
-    body = [x, y, {'color' : profile['energy']/10, 
-            'size' : size,
-            'symbol' : "pentagon",
-            'opacity' : 0.6,
-            'colorscale' : "Mint",
-            'cmin':0, 'cmax':1 }]
-    head = [x, y+size*0.5, {'color' : profile['reward_sex']/10, 
-            'size' : size/3,
-            'symbol' : "diamond",
-            'opacity' : 1.,
-            'colorscale' : "Hot",
-            'cmin':0, 'cmax':1  } ]
-    legs = [x, y-size*0.8, {'color' : profile['power_attack']/10, 
-            'size' : size/3,
-            'symbol' : "y-up",
-            'opacity' : 1.,
-            'colorscale' : "Sunset",
-            'line':dict(
-                color=profile['power_attack']/10,
-                width=size/10
-            ),
-            'cmin':0, 'cmax':1  } ]
-    return body, head, legs
-
 # Multiple components can update everytime interval gets fired.
 @callback(Output('info_area', 'children'),
-            Output('info_group', 'children'),
-            Output('fig_hvs', 'figure'),
+            Output('info_group', 'children'),            
             Output('fig_gene', 'figure'),
             Output('cytoscape', 'elements'), 
             Input('interval-component', 'n_intervals'))
@@ -441,36 +417,8 @@ def update_graph_live(n):
     info_group = gargalo.get_info()
 
     # hvs        
-    profile = gargalo.get_profiles()           
-    profile = profile[(profile['energy']>0) & (profile['energy_pool']>0)]        
-
-    body, head, legs = get_physical_rep(profile)
-
-    fig_hvs = go.Figure()
-    fig_hvs.add_trace(go.Scatter(
-        x=body[0],
-        y=body[1],
-        mode="markers",
-        marker=go.scatter.Marker(**body[2]), showlegend=False
-    ))
-    fig_hvs.add_trace(go.Scatter(
-        x=head[0],
-        y=head[1],
-        mode="markers",
-        marker=go.scatter.Marker(**head[2]), showlegend=False
-    ))
-    fig_hvs.add_trace(go.Scatter(
-        x=legs[0],
-        y=legs[1],
-        mode="markers",
-        marker=go.scatter.Marker(**legs[2]), showlegend=False
-    ))
-    max_age = max(profile["age"])
-    fig_hvs.update_yaxes(range=[-50, max_age+50])      
-    fig_hvs.update_layout(    
-        xaxis_title="Id",
-        yaxis_title="Age",          
-    )
+    profiles = gargalo.get_profiles()           
+    profiles = profiles[(profiles['energy']>0) & (profiles['energy_pool']>0)] 
 
     # Genetic survey
     data_gene = gargalo.history.get_genes()
@@ -489,8 +437,9 @@ def update_graph_live(n):
     
     # family
     family = gargalo.get_family()   
+    #print(family)
 
-    return info_area, info_group, fig_hvs, fig_genes, family
+    return info_area, info_group, fig_genes, family
 
 @callback(  Output('info_hv', 'children'), 
             Output('fig_hv', 'figure'),                       

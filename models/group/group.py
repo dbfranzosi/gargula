@@ -8,7 +8,7 @@ from .history import *
 import pandas as pd
 import pickle
 import time
-import os
+import glob, os
 
 class Group:
     '''
@@ -113,7 +113,11 @@ class Group:
             generation = hv.generation 
             x_max = generations.count(generation)  
             y_max = len(set_generations)
-            family.append({'data': {'id': hvid, 'label': hv.name},
+            str_url = f'assets/hv{hvid}.svg'
+            if not os.path.exists(str_url):
+                print(str_url, " doesn't exist.")
+                str_url = 'assets/gargula-inverted.jpg'                
+            family.append({'data': {'id': hvid, 'label': hv.name, 'url': str_url},
                             'position': {'x': i[generation]*600./x_max, 'y': (hv.generation - min_generation) * 500./y_max}})
             i[generation] += 1
             #print(family)
@@ -157,13 +161,16 @@ class Group:
                 return self, False
 
     def clean(self):
+        # remove avatars
+        for f in glob.glob("assets/hv*.svg"):
+            os.remove(f)
         self = Group(name='Gargalo', home=eden)
         str_tmp = f'./data/history/tmp.csv'
         if os.path.exists(str_tmp):
             os.remove(str_tmp)
         str_tmp = f'./data/history/tmp_hvs.csv'
         if os.path.exists(str_tmp):
-            os.remove(str_tmp)
+            os.remove(str_tmp)        
         return self
 
     def write_histories(self):

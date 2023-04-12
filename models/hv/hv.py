@@ -8,7 +8,8 @@ from settings import *
 from .history import HvHistory
 import time
 import pandas as pd
-
+import os
+import python_avatars as pa
 
 class Hv:
         
@@ -35,6 +36,8 @@ class Hv:
         self.mind = GraphDQLMind(self, memory_capacity=1000)
         self.history = HvHistory(self, capacity=3000)
 
+        self.get_avatar_rep()
+
     def act(self):
         self.action = self.mind.decide_action()        
         self.action.effects()        
@@ -59,7 +62,10 @@ class Hv:
             if self.age > 200:
                 self.history.save()
                 self.save_df()
-            del self.group.hvs[self.id]                                    
+            # delete image
+            # print(f"removing avatar hv{self.id}" )
+            # os.remove(f"assets/hv{self.id}.svg")
+            del self.group.hvs[self.id]                                          
 
     def make_baby(self, mother):
         haploid_father = self.genes.meiosis()
@@ -109,5 +115,34 @@ class Hv:
         # with open(f'./data/history/{self.owner.group.name}_hvs.csv', 'a') as f:
         with open(f'./data/history/tmp_info_hvs.csv', 'a') as f:
             df.to_csv(f, mode='a', header=header)
+
+    def get_avatar_rep(self):
+
+        # ['energy', 'energy_pool', 'power_attack', 'resistance_attack', 'feature1']
+        profile = self.visible.features
+
+        my_avatar = pa.Avatar(
+            style=pa.AvatarStyle.CIRCLE,
+            #background_color=pa.BackgroundColor.BLACK,
+            background_color="#{0:X}0000".format(int(profile[0]*20)),
+            top=pa.HairType.STRAIGHT_2,
+            eyebrows=pa.EyebrowType.DEFAULT_NATURAL,
+            eyes=pa.EyeType.DEFAULT,
+            nose=pa.NoseType.DEFAULT,
+            mouth=pa.MouthType.EATING,
+            facial_hair=pa.FacialHairType.NONE,
+            # You can use hex colors on any color attribute...            
+            skin_color="#{0:X}0000".format(int(profile[4]*20)),
+            # Or you can use the colors provided by the library
+            #hair_color=pa.HairColor.BLACK,
+            hair_color="#{0:X}0000".format(int(profile[2]*20)),
+            accessory=pa.AccessoryType.NONE,
+            clothing=pa.ClothingType.HOODIE,
+            clothing_color=pa.ClothingColor.HEATHER
+        )
+
+        # Save to a file
+        print(f"rendering avatar hv{self.id}")
+        my_avatar.render(f"assets/hv{self.id}.svg")
 
     
