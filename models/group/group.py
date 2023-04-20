@@ -113,7 +113,7 @@ class Group:
             generation = hv.generation 
             x_max = generations.count(generation)  
             y_max = len(set_generations)
-            str_url = f'assets/hv{hvid}.svg'
+            str_url = f'assets/avatars/hv{hvid}.svg'
             if not os.path.exists(str_url):
                 print(str_url, " doesn't exist.")
                 str_url = 'assets/gargula-inverted.jpg'                
@@ -162,7 +162,7 @@ class Group:
 
     def clean(self):
         # remove avatars
-        for f in glob.glob("assets/hv*.svg"):
+        for f in glob.glob("assets/avatars/hv*.svg"):
             os.remove(f)
         self = Group(name='Gargalo', home=eden)
         str_tmp = f'./data/history/tmp.csv'

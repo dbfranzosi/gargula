@@ -61,11 +61,11 @@ class Hv:
             # save importat info of history if it has a relevant history
             if self.age > 200:
                 self.history.save()
-                self.save_df()
+                self.save_df()            
+            del self.group.hvs[self.id]                                          
             # delete image
             # print(f"removing avatar hv{self.id}" )
-            # os.remove(f"assets/hv{self.id}.svg")
-            del self.group.hvs[self.id]                                          
+            #os.remove(f"assets/avatars/hv{self.id}.svg")
 
     def make_baby(self, mother):
         haploid_father = self.genes.meiosis()
@@ -142,7 +142,7 @@ class Hv:
         )
 
         # Save to a file
-        print(f"rendering avatar hv{self.id}")
-        my_avatar.render(f"assets/hv{self.id}.svg")
+        # print(f"rendering avatar hv{self.id}")
+        my_avatar.render(f"assets/avatars/hv{self.id}.svg")
 
     
