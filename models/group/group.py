@@ -108,11 +108,12 @@ class Group:
         generations = [hv.generation for hv in self.hvs.values()]
         min_generation = min(generations)
         set_generations = set(generations)
-        i = dict.fromkeys(set_generations, 0)
+        i = dict.fromkeys(set_generations, 0)        
         for hvid, hv in self.hvs.items():  
             generation = hv.generation 
             x_max = generations.count(generation)  
             y_max = len(set_generations)
+            # print(f'showing assets/avatars/hv{hvid}.svg')
             str_url = f'assets/avatars/hv{hvid}.svg'
             if not os.path.exists(str_url):
                 print(str_url, " doesn't exist.")

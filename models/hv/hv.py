@@ -65,7 +65,7 @@ class Hv:
             del self.group.hvs[self.id]                                          
             # delete image
             # print(f"removing avatar hv{self.id}" )
-            #os.remove(f"assets/avatars/hv{self.id}.svg")
+            # os.remove(f"assets/avatars/hv{self.id}.svg")
 
     def make_baby(self, mother):
         haploid_father = self.genes.meiosis()
@@ -141,8 +141,10 @@ class Hv:
             clothing_color=pa.ClothingColor.HEATHER
         )
 
-        # Save to a file
-        # print(f"rendering avatar hv{self.id}")
-        my_avatar.render(f"assets/avatars/hv{self.id}.svg")
+        # Save to a file        
+        avatar_file = f"assets/avatars/hv{self.id}.svg"
+        if os.path.exists(avatar_file):
+            os.remove(avatar_file)        
+        my_avatar.render(avatar_file)
 
     

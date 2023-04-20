@@ -23,12 +23,16 @@ dash.register_page(__name__)
 
 # should not use global variables, instead use long_callbacks and sharing data
 # https://dash.plotly.com/sharing-data-between-callbacks
+# convert to dcc.Store
+
 releaser = True
 releaser_ext = False
 
 passing_turn = False
 simulating = False
 saving = False
+
+hv_display = 0
 
 visualize_settings()
 
@@ -403,6 +407,7 @@ def control_sim(n_run, n_sim):
             Input('interval-component', 'n_intervals'))
 def update_graph_live(n): 
     global simulating, passing_turn, saving    
+
     holder = (not simulating) or saving or passing_turn
     if holder:
         raise PreventUpdate 
@@ -414,7 +419,7 @@ def update_graph_live(n):
 
     # Info
     info_area = eden.get_info() 
-    info_group = gargalo.get_info()
+    info_group = gargalo.get_info()    
 
     # hvs        
     profiles = gargalo.get_profiles()           
@@ -443,8 +448,9 @@ def update_graph_live(n):
 
 @callback(  Output('info_hv', 'children'), 
             Output('fig_hv', 'figure'),                       
-            Input('input-hv', 'value'))
-def update_hv_panel(hv_sel):     
+            Input('input-hv', 'value'),
+            Input('cytoscape', 'tapNodeData'))
+def update_hv_panel(hv_sel, cyto_data):       
     
     lst_ids = gargalo.get_list_ids()   
     # add list of hv to info
@@ -452,9 +458,14 @@ def update_hv_panel(hv_sel):
     fig_hv = make_subplots(rows=3, cols=2, 
                     subplot_titles=["gen values", "trait values", "Rewards", "Nr of actions"])     
     
-    #print('hv_sel=', hv_sel)  
-    if hv_sel in lst_ids:           
-        hv = gargalo.hvs[hv_sel]    
+    hv_display = -1
+    if cyto_data:
+        hv_display=int(cyto_data['id'])        
+
+    print('hv_display=', hv_display, type(hv_display))     
+    print(lst_ids) 
+    if hv_display in lst_ids:           
+        hv = gargalo.hvs[hv_display]    
         info_hv = hv.get_info(show_genes=False, show_action=True, show_visible=False)        
         genes = hv.get_genes()
         traits = hv.genes.phenotype.traits
