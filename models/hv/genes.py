@@ -38,10 +38,10 @@ class Phenotype:
     def __init__(self, genetics, sequence):
         
         # energetics/metabolism 
-        expression = [a*b for a,b in zip(sequence[0],sequence[1])]
+        self.expression = [a*b for a,b in zip(sequence[0],sequence[1])]
         self.traits = {}
         for trait in genetics.w.keys():
-            self.traits[trait] = np.dot(genetics.w[trait], expression)
+            self.traits[trait] = np.dot(genetics.w[trait], self.expression)
     
 def haploid2genes(haploid_father, haploid_mother):
     return [haploid_father, haploid_mother]

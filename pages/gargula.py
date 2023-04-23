@@ -176,7 +176,7 @@ control_sim = html.Div([
 family_tree = cyto.Cytoscape(
             id='cytoscape',        
             layout={'name': 'preset', 'animate': True},        
-            style={'width': '600px', 'height': '500px'},        
+            #style={'width': '600px', 'height': '500px'},        
             stylesheet=[            
                 {
                     'selector': 'node',
@@ -202,31 +202,26 @@ family_tree = cyto.Cytoscape(
             ]
         )
 
-
-group_panel = html.Div([
-        html.Div(id='info_area'),        
-        html.Div(id='info_group'), 
-        family_tree,          
-        # dbc.Row([
-        #     #dbc.Col(dcc.Graph(id='fig_hvs'), width=4),
-        #     dbc.Col(html.Img(id='avatar', width="250px"), width=4),
-        #     dbc.Col(family_tree, width=8)
-        # ]),
-        dcc.Graph(id='fig_gene') 
-], style={"margin-top": "15px", "margin-bottom": "15px"})
-
-hv_panel =     html.Div([
-        dcc.Input(id="input-hv", type="number", placeholder="Id of the hv", debounce=True),
+hv_panel =     html.Div([        
         html.Div(id='info_hv'),                
         dcc.Graph(id='fig_hv')
     ], style={"margin-top": "15px", "margin-bottom": "15px"})
+
+group_panel = html.Div([        
+        html.Div(id='info_area'),        
+        html.Div(id='info_group'),         
+        dbc.Row([
+             dbc.Col(family_tree, width=6),
+             dbc.Col(hv_panel, width=6)             
+        ]),
+        dcc.Graph(id='fig_gene') 
+], style={"margin-top": "15px", "margin-bottom": "15px"})
 
 layout = html.Div([
     cards_init,
     accordion_init,  
     control_sim,  
-    group_panel,
-    hv_panel
+    group_panel    
 ],  style={"margin-left": "30px", "margin-right": "30px"})
 
 @callback(
@@ -430,7 +425,7 @@ def update_graph_live(n):
     y_genes, y_traits, y_actions = gargalo.history.get_indicators()     
        
     fig_genes = make_subplots(rows=2, cols=2, 
-                subplot_titles=["Averaged gen values", "", "Averaged trait values", "Nr of actions"])
+                subplot_titles=["Averaged gen values", "Average gen evolution", "Averaged trait values", "Nr of actions"])
     fig_genes.add_trace(go.Bar(y=data_gene, showlegend=False), row=1, col=1)
     #fig_genes.add_trace(go.Scatter(y=[2, 1, 3], mode="lines", showlegend=False), row=1, col=2)    
     for i in range(GEN_SIZE):
@@ -447,23 +442,20 @@ def update_graph_live(n):
     return info_area, info_group, fig_genes, family
 
 @callback(  Output('info_hv', 'children'), 
-            Output('fig_hv', 'figure'),                       
-            Input('input-hv', 'value'),
+            Output('fig_hv', 'figure'),                                   
             Input('cytoscape', 'tapNodeData'))
-def update_hv_panel(hv_sel, cyto_data):       
+def update_hv_panel(cyto_data):       
     
     lst_ids = gargalo.get_list_ids()   
     # add list of hv to info
     info_hv = 'This homo-virtualis is not in the group.'
-    fig_hv = make_subplots(rows=3, cols=2, 
+    fig_hv = make_subplots(rows=2, cols=2, 
                     subplot_titles=["gen values", "trait values", "Rewards", "Nr of actions"])     
     
     hv_display = -1
     if cyto_data:
         hv_display=int(cyto_data['id'])        
-
-    print('hv_display=', hv_display, type(hv_display))     
-    print(lst_ids) 
+    
     if hv_display in lst_ids:           
         hv = gargalo.hvs[hv_display]    
         info_hv = hv.get_info(show_genes=False, show_action=True, show_visible=False)        
@@ -477,20 +469,20 @@ def update_hv_panel(hv_sel, cyto_data):
         fig_hv.add_trace(go.Scatter(y=indicators.reward, mode="lines", showlegend=False), row=2, col=1)    
         for action in ACTIONS:                 
             fig_hv.add_trace(go.Scatter(y=y_actions[action], mode="lines", name=action), row=2, col=2)    
-        fig_hv.add_trace(go.Scatter(x=indicators.resistance, y=indicators.reward, mode="markers", showlegend=False), row=3, col=1)    
+        #fig_hv.add_trace(go.Scatter(x=indicators.resistance, y=indicators.reward, mode="markers", showlegend=False), row=3, col=1)    
 
-    fig_hv.update_layout(
-    autosize=False,
-    width=1500,
-    height=800,
-    # margin=dict(
-    #     l=50,
-    #     r=50,
-    #     b=100,
-    #     t=100,
-    #     pad=4
-    # ),
-    #paper_bgcolor="LightSteelBlue",
-    )  
+    # fig_hv.update_layout(
+    # autosize=False,
+    # width=1500,
+    # height=800,
+    # # margin=dict(
+    # #     l=50,
+    # #     r=50,
+    # #     b=100,
+    # #     t=100,
+    # #     pad=4
+    # # ),
+    # #paper_bgcolor="LightSteelBlue",
+    # )  
 
     return info_hv, fig_hv 

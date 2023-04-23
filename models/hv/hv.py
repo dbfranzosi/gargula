@@ -36,7 +36,7 @@ class Hv:
         self.mind = GraphDQLMind(self, memory_capacity=1000)
         self.history = HvHistory(self, capacity=3000)
 
-        self.get_avatar_rep()
+        self.avatar = self.get_avatar_rep()
 
     def act(self):
         self.action = self.mind.decide_action()        
@@ -118,33 +118,50 @@ class Hv:
 
     def get_avatar_rep(self):
 
-        # ['energy', 'energy_pool', 'power_attack', 'resistance_attack', 'feature1']
+        # profile -> ['energy', 'energy_pool', 'power_attack', 'resistance_attack', 'feature1']
         profile = self.visible.features
-
-        my_avatar = pa.Avatar(
-            style=pa.AvatarStyle.CIRCLE,
-            #background_color=pa.BackgroundColor.BLACK,
-            background_color="#{0:X}0000".format(int(profile[0]*20)),
-            top=pa.HairType.STRAIGHT_2,
+        expression = self.genes.phenotype.expression
+        
+        avatar = pa.Avatar(
+            style=pa.AvatarStyle.CIRCLE,            
+            background_color=pa.BackgroundColor.WHITE,
+            top=pa.HairType.SHORT_FLAT,
             eyebrows=pa.EyebrowType.DEFAULT_NATURAL,
             eyes=pa.EyeType.DEFAULT,
             nose=pa.NoseType.DEFAULT,
-            mouth=pa.MouthType.EATING,
+            mouth=pa.MouthType.DEFAULT,
             facial_hair=pa.FacialHairType.NONE,
             # You can use hex colors on any color attribute...            
-            skin_color="#{0:X}0000".format(int(profile[4]*20)),
+            # skin_color="#{0:X}0000".format(int(profile[4]*20)),
+            skin_color=pa.SkinColor.LIGHT,
             # Or you can use the colors provided by the library
-            #hair_color=pa.HairColor.BLACK,
-            hair_color="#{0:X}0000".format(int(profile[2]*20)),
+            hair_color=pa.HairColor.BLACK,
+            #hair_color="#{0:X}0000".format(int(profile[2]*20)),
             accessory=pa.AccessoryType.NONE,
             clothing=pa.ClothingType.HOODIE,
             clothing_color=pa.ClothingColor.HEATHER
         )
 
-        # Save to a file        
-        avatar_file = f"assets/avatars/hv{self.id}.svg"
-        if os.path.exists(avatar_file):
-            os.remove(avatar_file)        
-        my_avatar.render(avatar_file)
+        # Change if gen is recessive
+        if (expression[0]==1):
+            avatar.top = pa.HairType.SHORT_WAVED 
+        if (expression[1]==1):
+            avatar.skin_color = pa.SkinColor.BROWN
+        if (expression[2]==1):
+            avatar.hair_color = pa.HairColor.RED
+        if (expression[3]==1):
+            avatar.nose = pa.NoseType.WIDE
+        if (expression[4]==1):
+            avatar.eyebrows = pa.EyebrowType.ANGRY
+        if (expression[5]==1):
+            avatar.eyes = pa.EyeType.SURPRISED
+        if (expression[6]==1):
+            avatar.mouth = pa.MouthType.GRIMACE        
 
-    
+        # # Save to a file        
+        # avatar_file = f"assets/avatars/hv{self.id}.svg"
+        # if os.path.exists(avatar_file):
+        #     os.remove(avatar_file)        
+        # avatar.render(avatar_file)
+
+        return avatar    

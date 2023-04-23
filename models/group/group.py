@@ -114,11 +114,10 @@ class Group:
             x_max = generations.count(generation)  
             y_max = len(set_generations)
             # print(f'showing assets/avatars/hv{hvid}.svg')
-            str_url = f'assets/avatars/hv{hvid}.svg'
-            if not os.path.exists(str_url):
-                print(str_url, " doesn't exist.")
-                str_url = 'assets/gargula-inverted.jpg'                
-            family.append({'data': {'id': hvid, 'label': hv.name, 'url': str_url},
+            avatar_file = f'assets/avatars/hv{hvid}.svg'
+            if not os.path.exists(avatar_file):
+                hv.avatar.render(avatar_file)                                
+            family.append({'data': {'id': hvid, 'label': hv.name, 'url': avatar_file},
                             'position': {'x': i[generation]*600./x_max, 'y': (hv.generation - min_generation) * 500./y_max}})
             i[generation] += 1
             #print(family)
