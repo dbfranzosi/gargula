@@ -1,7 +1,8 @@
 ''' Backend ''' 
 from reality.biology import biology
 from reality.geography import eden
-from models.group.group import gargalo
+#from models.group.group import gargalo
+from models.group.group import Group
 from settings import *
 import pandas as pd
 
@@ -16,8 +17,17 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import numpy as np
 import dash_cytoscape as cyto
+from flask import session
+
+''' System '''
 from os import listdir
 import time
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+logger.info('Beggining of user log.')
 
 dash.register_page(__name__)
 
@@ -44,6 +54,7 @@ lst_bios = [name.split('.')[0] for name in lst_bios]
 
 lst_areas = listdir('./data/areas/')
 lst_areas = [name.split('.')[0] for name in lst_areas]
+
 
 cards_init = dbc.CardGroup(
     [
@@ -248,8 +259,19 @@ layout = html.Div([
         )
 def initialization(name_biology, name_area, name_group, n_load_bio, n_create_bio, n_load_area, n_create_area,
         n_load_group, n_create_group, n_clean_group, biology_list, area_list, group_list, nrhv):
-    global gargalo, biology, eden
+    #global gargalo, biology, eden
+    global biology, eden
     global simulating, saving, passing_turn
+
+    # Retrieve the class instance from the session
+    gargalo = session.get('gargalo')
+    
+    if gargalo is None:
+        # Create a new instance of the class if it doesn't exist in the session
+        gargalo = Group(name='Gargalo', home=eden)
+        
+        # Store the class instance in the session
+        session['gargalo'] = gargalo    
 
     if (simulating or saving or passing_turn):
         PreventUpdate
@@ -355,6 +377,7 @@ def initialization(name_biology, name_area, name_group, n_load_bio, n_create_bio
 
     elif (trigger == 'clean_group-buttom'):        
         gargalo = gargalo.clean()        
+        info_group = ''
 
     info_biology += biology.get_info()    
     info_area += eden.get_info() 
@@ -371,6 +394,8 @@ def initialization(name_biology, name_area, name_group, n_load_bio, n_create_bio
         )
 def control_sim(n_run, n_sim): 
     global simulating, passing_turn, saving
+
+    gargalo = session.get('gargalo')
 
     lst_groups = listdir('./data/groups/')
     lst_groups = [name.split('.')[0] for name in lst_groups]        
@@ -405,12 +430,20 @@ def update_graph_live(n):
 
     holder = (not simulating) or saving or passing_turn
     if holder:
-        raise PreventUpdate 
+        logger.info('Prevent update.')
+        raise PreventUpdate       
+
+    # Retrieve the class instance from the session
+    gargalo = session.get('gargalo')      
+    
+    logger.info(eden.get_info())
+    logger.info(f'{passing_turn}')
     passing_turn = True
     #before = time.time()
     passing_turn = not eden.pass_day()       
     #after = time.time()    
     #print('interval=', after - before)    
+    logger.info(f'{passing_turn}')
 
     # Info
     info_area = eden.get_info() 
@@ -444,7 +477,10 @@ def update_graph_live(n):
 @callback(  Output('info_hv', 'children'), 
             Output('fig_hv', 'figure'),                                   
             Input('cytoscape', 'tapNodeData'))
-def update_hv_panel(cyto_data):       
+def update_hv_panel(cyto_data):  
+
+    # Retrieve the class instance from the session
+    gargalo = session.get('gargalo')         
     
     lst_ids = gargalo.get_list_ids()   
     # add list of hv to info
