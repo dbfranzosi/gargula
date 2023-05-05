@@ -1,6 +1,7 @@
 from dash import Dash, html, dcc
 import dash
 import dash_bootstrap_components as dbc
+from flask import session
 
 # create directories not in repository (from gitignore)
 from pathlib import Path
@@ -15,6 +16,13 @@ Path("./assets/avatars").mkdir(parents=True, exist_ok=True)
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.CYBORG], use_pages=True)
 # to create docker image use server (line below) and comment __main__ function
 server = app.server
+app.config.suppress_callback_exceptions = True
+app.server.secret_key = 'my_secret_key'
+
+# @app.server.before_request
+# def before_request():
+#     session.permanent = True
+#     app.permanent_session_lifetime = timedelta(minutes=5)
 
 app.layout = html.Div([
 	 dbc.NavbarSimple(
