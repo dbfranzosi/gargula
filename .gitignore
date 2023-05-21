@@ -5,3 +5,4 @@ __pycache__/
 **/*.pyc
 *.pyc
 assets/avatars/
+credentials.py
